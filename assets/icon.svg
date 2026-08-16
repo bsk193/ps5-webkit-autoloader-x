@@ -4,7 +4,7 @@
     <style>
       .jb-badge{fill:url(#jbBadgeGrad);}
       .jb-rim{fill:none;stroke:url(#jbRimGrad);stroke-width:10;}
-      .jb-link{fill:none;stroke:url(#jbChainGrad);stroke-width:56;stroke-linejoin:round;}
+      .jb-link{fill:none;stroke:url(#jbChainGrad);stroke-width:58;stroke-linejoin:round;}
       .jb-shard{fill:url(#jbChainGrad);}
     </style>
 
@@ -30,16 +30,17 @@
   <circle class="jb-badge" cx="512" cy="512" r="500"/>
   <circle class="jb-rim" cx="512" cy="512" r="505"/>
 
-  <!-- Lower-left link -->
-  <rect class="jb-link" x="200.6" y="548.4" width="340" height="210" rx="105"
-        transform="rotate(-45 370.6 653.4)"/>
+  <!-- Lower-left half of the chain, kicked down-right off the axis -->
+  <rect class="jb-link" x="156.8" y="547" width="340" height="210" rx="105"
+        transform="rotate(-45 326.8 652)"/>
 
-  <!-- Upper-right link, pulled away along the same axis -->
-  <rect class="jb-link" x="483.4" y="265.6" width="340" height="210" rx="105"
-        transform="rotate(-45 653.4 370.6)"/>
+  <!-- Upper-right half, kicked up-left: the offset is what reads as "snapped" -->
+  <rect class="jb-link" x="527.2" y="267" width="340" height="210" rx="105"
+        transform="rotate(-45 697.2 372)"/>
 
-  <!-- Snap debris in the gap -->
-  <polygon class="jb-shard" points="547,521 573,547 547,573 521,547"/>
-  <polygon class="jb-shard" points="477,451 497,471 477,491 457,471"/>
-  <polygon class="jb-shard" points="590,466 606,482 590,498 574,482"/>
+  <!-- Debris sprayed perpendicular to the break -->
+  <polygon class="jb-shard" points="556,530 582,556 556,582 530,556"/>
+  <polygon class="jb-shard" points="468,446 490,468 468,490 446,468"/>
+  <polygon class="jb-shard" points="612,600 630,618 612,636 594,618"/>
+  <polygon class="jb-shard" points="412,390 428,406 412,422 396,406"/>
 </svg>

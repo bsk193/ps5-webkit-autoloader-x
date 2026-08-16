@@ -1,0 +1,49 @@
+name: Icon Preview
+
+# Renders assets/icon.svg through tools/gen_icons.py and uploads the results as
+# artifacts. Lets icon changes be reviewed without cutting a release — the icon
+# pipeline needs rsvg-convert, which is not available on every dev machine.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to render from'
+        type: string
+        required: false
+        default: main
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Install SVG renderer
+        run: sudo apt-get update && sudo apt-get install -y librsvg2-bin
+
+      - name: Generate icon assets
+        run: python3 tools/gen_icons.py
+
+      - name: Render homescreen tile at review sizes
+        run: |
+          mkdir -p icon-preview
+          cp assets/icon0.png icon-preview/tile-512.png
+          cp assets/icon.ico  icon-preview/icon.ico
+          # The sizes that actually matter: PS5 tile, and small sizes where a
+          # busy icon falls apart.
+          for s in 256 128 64 32 16; do
+            rsvg-convert -w $s -h $s frontend/autoloader/favicon.svg \
+              -o "icon-preview/tile-${s}.png"
+          done
+          ls -la icon-preview
+
+      - name: Upload preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: icon-preview
+          path: icon-preview/
+          retention-days: 3
