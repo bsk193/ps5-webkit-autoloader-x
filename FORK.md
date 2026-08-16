@@ -27,7 +27,7 @@ payloads run first, then the manager starts after a 2 s pause
 |---|---|
 | `.gitmodules` | `third_party/ps5-unified-autoloader` → `third_party/ps5-unified-autoloader-x` (`bsk193/…`) |
 | `tools/download_deps.sh` | `PAYLOAD_SUBMODULE` / `PAYLOAD_REPO` point at the fork |
-| `include/wkali.h` | `WKAL_VERSION` → `0.3.1x`; `WKAL_TITLE_ID` → `WKLX00001` |
+| `include/wkali.h` | `WKAL_VERSION` → `0.3.2x`; `WKAL_TITLE_ID` → `WKLX00001` |
 | `assets/param.json.template` | `titleId` → `WKLX00001`, `titleName` → "Jailbreak" (no version suffix) |
 | `assets/icon.svg` | Replaced with a broken-chain-link jailbreak icon |
 | `README.md`, `ARCHITECTURE.md` | Fork notes, branding, links |
