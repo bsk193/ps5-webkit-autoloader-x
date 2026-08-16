@@ -1,5 +1,5 @@
 #!/bin/bash
-# WebKit Autoloader Installer - Versioned Release Build Script
+# WebKit Autoloader X Installer - Versioned Release Build Script
 
 # 1. Compute full version (stable = base, dev = base + build type + git hash/timestamp)
 VERSION=$(python3 tools/gen_version.py --print)
@@ -13,7 +13,7 @@ OUTPUT_ELF="webkit-autoloader-installer_v${VERSION}.elf"
 HOST_PY="webkit-autoloader-host_v${VERSION}.py"
 IMAGE_NAME="ps5-webkit-autoloader-sdk"
 
-echo "--- Building WebKit Autoloader Installer v$VERSION ---"
+echo "--- Building WebKit Autoloader X Installer v$VERSION ---"
 
 # 2. Remove old versioned artifacts
 rm -f webkit-autoloader-installer_v*.elf webkit-autoloader-host_v*.py

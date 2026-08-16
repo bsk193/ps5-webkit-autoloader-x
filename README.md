@@ -1,9 +1,19 @@
 <p align="center">
  <img src="./assets/icon.svg" width="128" />
 </p>
-<h1 align="center">PS5 WebKit Autoloader</h1>
+<h1 align="center">PS5 WebKit Autoloader X</h1>
 &nbsp;
 <p align="center">Automatically loads the WebKit exploit and your elf payloads.<br>Supports firmwares <b>1.00&ndash;5.50</b> and <b>9.00&ndash;12.00</b>.</p>
+
+> [!IMPORTANT]
+> **This is a fork of [itsPLK/ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader).**
+> The only difference is the payload manager it falls back to: this build loads
+> **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)** (port **8084**) instead of the
+> official [Payload Manager](https://github.com/itsPLK/ps5-payload-manager).
+>
+> The exploit chain, `autoload.txt` handling, browser handling and app killing are all unchanged upstream behaviour.
+> It installs as a **separate** homescreen app (`WKLX00001`, "WebKit Autoloader X"), so it can coexist with the
+> official autoloader rather than replacing it.
 
 > [!NOTE]
 > Uses the [umtx2](https://github.com/idlesauce/umtx2) (FW 1.00–5.50) and [slopkit](https://github.com/jordyidk/slopkit) (FW 9.00–12.00) WebKit exploits under the hood with minimal changes (via patch files in `patches/`), so stability should match the originals.
@@ -15,15 +25,15 @@
     <a href="https://github.com/itsPLK/ps5-lua-autoloader">Lua</a>
 </p>
 
-## Why WebKit Autoloader?
+## Why WebKit Autoloader X?
 
 WebKit exploits are usually loaded by pointing your PS5's DNS at some server hosted by someone on the internet. That means you're putting your trust in whoever runs that server — and if it goes down, changes, or disappears, your setup breaks.
 
 This autoloader does it differently:
 
 - **Fully offline, no third-party DNS.** After a one-time install from your PC, everything is served straight from your PS5. There's nothing external to go down or change behind your back.
-- **One-time setup, then a homescreen shortcut.** Once it's installed, you don't need a PC or the network at all — just launch "WebKit Autoloader" from the homescreen and you're done.
-- **Payloads loaded the way you already know.** After the exploit chain runs, your payloads are sent just like in [Y2JB](https://github.com/itsPLK/ps5-y2jb-autoloader) / [BD-JB](https://github.com/itsPLK/ps5-bdjb-autoloader) / [Lua](https://github.com/itsPLK/ps5-lua-autoloader) autoloaders — via **Payload Manager**, or a custom `autoload.txt`.
+- **One-time setup, then a homescreen shortcut.** Once it's installed, you don't need a PC or the network at all — just launch "WebKit Autoloader X" from the homescreen and you're done.
+- **Payloads loaded the way you already know.** After the exploit chain runs, your payloads are sent just like in [Y2JB](https://github.com/itsPLK/ps5-y2jb-autoloader) / [BD-JB](https://github.com/itsPLK/ps5-bdjb-autoloader) / [Lua](https://github.com/itsPLK/ps5-lua-autoloader) autoloaders — via **Payload Manager X**, or a custom `autoload.txt`.
 
 ## Setup Instructions
 
@@ -31,31 +41,31 @@ There are two ways to set up the autoloader, depending on whether you're already
 
 ### Already jailbroken? Just load the installer ELF
 
-1. Download `webkit-autoloader-installer_vX.Y.Z.elf` from the [Releases](https://github.com/itsPLK/ps5-webkit-autoloader/releases) page.
-2. Send it to your PS5 with `elfldr`, or launch it from Payload Manager.
-3. The installer opens the browser once to cache the autoloader page, then creates the **WebKit Autoloader** app on the homescreen and exits.
-4. **Reboot once**, then launch **WebKit Autoloader** from the homescreen.
+1. Download `webkit-autoloader-installer_vX.Y.Zx.elf` from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) page.
+2. Send it to your PS5 with `elfldr`, or launch it from a payload manager.
+3. The installer opens the browser once to cache the autoloader page, then creates the **WebKit Autoloader X** app on the homescreen and exits.
+4. **Reboot once**, then launch **WebKit Autoloader X** from the homescreen.
 
 ### Not jailbroken yet
 
 If you aren't jailbroken yet, you'll need to host the exploit locally on your PC for the initial setup:
 
-1. Download `webkit-autoloader-host.py` (or the `.exe`) from the [Releases](https://github.com/itsPLK/ps5-webkit-autoloader/releases) and run it on a PC on your network.
+1. Download `webkit-autoloader-host.py` (or the `.exe`) from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) and run it on a PC on your network.
 2. On your PS5, set your network's DNS server to your PC's IP address.
-3. Open the **User's Guide** from Settings to run the installer, which adds the **WebKit Autoloader** app to your homescreen.
-4. **Reboot once**, then launch **WebKit Autoloader** from the homescreen.
+3. Open the **User's Guide** from Settings to run the installer, which adds the **WebKit Autoloader X** app to your homescreen.
+4. **Reboot once**, then launch **WebKit Autoloader X** from the homescreen.
 
 ## How to Use
 
 There are two ways to configure payloads:
 
-### 🟢 Option 1: Payload Manager
+### 🟢 Option 1: Payload Manager X
 
-If no `autoload.txt` config is found, the autoloader will automatically launch **[Payload Manager](https://github.com/itsPLK/ps5-payload-manager)** — a fully-featured PS5 payload manager with a web UI. This lets you configure and send payloads directly from your browser, without needing to manually set up config files or transfer ELF files ahead of time.
+If no `autoload.txt` config is found, the autoloader will automatically launch **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)** — a fully-featured PS5 payload manager with a web UI, served on **port 8084**. This lets you configure and send payloads directly from your browser, without needing to manually set up config files or transfer ELF files ahead of time.
 
-Just run the autoloader — if there's nothing configured, Payload Manager starts automatically.
+Just run the autoloader — if there's nothing configured, Payload Manager X starts automatically.
 
-> **Note:** Payload Manager also has its own built-in autoload feature, which lets you configure payloads to load automatically on startup — all managed through its web UI. This is separate from the `autoload.txt` mechanism described below.
+> **Note:** Payload Manager X also has its own built-in autoload feature, which lets you configure payloads to load automatically on startup — all managed through its web UI. This is separate from the `autoload.txt` mechanism described below.
 
 ---
 
@@ -72,7 +82,7 @@ For a fixed, automated payload chain, you can configure payloads manually:
   - Root of a USB drive
   - Internal drive: `/data/ps5_autoloader`
 
-> **Note:** When an `autoload.txt` config is found, Payload Manager is **not** launched automatically. If you also want Payload Manager available, place `pldmgr.elf` in your `ps5_autoloader` directory and add it to `autoload.txt`.
+> **Note:** When an `autoload.txt` config is found, Payload Manager X is **not** launched automatically. If you also want it available, place the `pldmgrx_v*.elf` from the [Payload Manager X releases](https://github.com/bsk193/ps5-payload-manager-x/releases) in your `ps5_autoloader` directory and add it to `autoload.txt`.
 
 ## Additional Info
 
@@ -89,7 +99,7 @@ The latest installer payload will re-create the homescreen app and refresh the c
 
 On firmwares 9.00–12.00 (slopkit), the autoloader uses a custom version of **elfldr** that only accepts connections from the PS5 itself (localhost). This improves security by preventing unauthorized devices on your network from sending payloads to your console. On firmwares 1.00–5.50 (umtx2), the stock elfldr is booted.
 
-If you want to use a "normal" ELF Loader that allows sending payloads from any device, you can simply load it through **Payload Manager**.
+If you want to use a "normal" ELF Loader that allows sending payloads from any device, you can simply load it through **Payload Manager X**.
 
 Alternatively, if you are using a manual config file (`autoload.txt`):
 1. Place your custom ELF Loader (e.g. `elfldr.elf`) in the `ps5_autoloader` directory.
@@ -115,6 +125,7 @@ The technical internals and project architecture are documented in **[ARCHITECTU
 
 ## Credits
 
+* **[itsPLK](https://github.com/itsPLK)** — [ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader), [ps5-unified-autoloader](https://github.com/itsPLK/ps5-unified-autoloader) and [ps5-payload-manager](https://github.com/itsPLK/ps5-payload-manager). This project is a fork of their work; all of the autoloader's design and implementation is theirs.
 * **[idlesauce](https://github.com/idlesauce)** & contributors — [umtx2](https://github.com/idlesauce/umtx2), the WebKit/kernel exploit chain used for firmware 1.00–5.50.
 * **[jordyidk](https://github.com/jordyidk)** & contributors — [slopkit](https://github.com/jordyidk/slopkit), the WebKit/kernel exploit chain used for firmware 9.00–12.00.
 * **[john-tornblom](https://github.com/john-tornblom)** — [ps5-payload-sdk](https://github.com/ps5-payload-dev/sdk/) and [elfldr](https://github.com/ps5-payload-dev/elfldr)

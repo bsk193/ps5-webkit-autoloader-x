@@ -1,5 +1,5 @@
 /*
- * PS5 Homescreen App Installer for the WebKit Autoloader Installer.
+ * PS5 Homescreen App Installer for the WebKit Autoloader X Installer.
  * Based on the original implementation in ftpsrv by John Törnblom
  * and Payload Manager by PLK.
  */
@@ -155,10 +155,10 @@ int wkali_install_app_if_needed(void) {
 
   if (stat(base_dir, &st) == 0) {
     wkali_log("[WKALI] Updating existing app launcher (%s)...\n", title_id);
-    wkali_notify("Updating WebKit Autoloader App...");
+    wkali_notify("Updating WebKit Autoloader X App...");
   } else {
     wkali_log("[WKALI] Installing browser launcher app (%s)...\n", title_id);
-    wkali_notify("Installing WebKit Autoloader App...");
+    wkali_notify("Installing WebKit Autoloader X App...");
   }
 
   int err;
@@ -195,7 +195,7 @@ int wkali_install_app_if_needed(void) {
   }
 
   wkali_log("[WKALI] Launcher app installed successfully.\n");
-  wkali_notify("WebKit Autoloader App Ready!");
+  wkali_notify("WebKit Autoloader X App Ready!");
 
   sceAppInstUtilTerminate();
   return 0;

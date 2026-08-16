@@ -1,5 +1,5 @@
 #!/bin/bash
-# WebKit Autoloader Installer - Automated Build & Deploy Script
+# WebKit Autoloader X Installer - Automated Build & Deploy Script
 
 if [ -z "$1" ]; then
     echo "Usage: ./deploy.sh [PS5_IP]"
@@ -11,7 +11,7 @@ LOADER_PORT="9021"
 ELF="installer.elf"
 IMAGE_NAME="ps5-webkit-autoloader-sdk"
 
-echo "--- Deploying WebKit Autoloader Installer to $PS5_IP ---"
+echo "--- Deploying WebKit Autoloader X Installer to $PS5_IP ---"
 
 # 1. Build/verify the docker image
 if [[ "$(docker images -q $IMAGE_NAME 2> /dev/null)" == "" ]]; then

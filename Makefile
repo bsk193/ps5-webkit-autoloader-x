@@ -1,4 +1,4 @@
-# WebKit Autoloader Installer - Native PS5 ELF Makefile
+# WebKit Autoloader X Installer - Native PS5 ELF Makefile
 
 # Tools
 PYTHON := python3
@@ -89,12 +89,12 @@ umtx2-prepare:
 	@echo "Preparing umtx2 copy..."
 	./tools/apply_umtx2_patch.sh
 
-# Fetch the shared elfldr + the bundled ps5-unified-autoloader payload ELF from
+# Fetch the shared elfldr + the bundled ps5-unified-autoloader-x payload ELF from
 # their pinned GitHub releases (tools/download_deps.sh). Idempotent: skips when
 # the binaries are already present and verified, so offline rebuilds still work.
 .PHONY: payload-deps
 payload-deps:
-	@echo "Fetching shared elfldr + unified-autoloader payload..."
+	@echo "Fetching shared elfldr + unified-autoloader-x payload..."
 	./tools/download_deps.sh
 
 $(FILE_REGISTRY_STAMP): $(FRONTEND_FILES) version icons slopkit-prepare umtx2-prepare payload-deps
@@ -117,7 +117,7 @@ $(ELF): $(FILE_REGISTRY_H) $(FILE_REGISTRY_C) $(SRCS) $(ICON0)
 	$(STRIP) $(ELF)
 
 # The PC host is the one-time setup flow: it serves the installer ELF (the
-# homescreen-app installer) instead of the bundled unified-autoloader payload.
+# homescreen-app installer) instead of the bundled unified-autoloader-x payload.
 # HOST_PAYLOAD overrides the payload path (build_release.sh passes the
 # versioned ELF it already built); it defaults to $(ELF).
 HOST_PAYLOAD ?= $(ELF)

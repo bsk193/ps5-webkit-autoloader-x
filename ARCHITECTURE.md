@@ -1,4 +1,4 @@
-# PS5 WebKit Autoloader: Architecture
+# PS5 WebKit Autoloader X: Architecture
 
 A persistent entry point for PS5 payloads that runs a WebKit/kernel exploit chain
 and autoloads your payloads fully offline. Two exploit chains are bundled and
@@ -7,8 +7,29 @@ selected by firmware:
 - **umtx2** (FW **1.00–5.50**) — idlesauce's umtx2 exploit.
 - **slopkit** (FW **9.00–12.00**) — the slopkit exploit chain.
 
-Both converge on the same result: a `WKAL00001` homescreen app that runs the
+Both converge on the same result: a `WKLX00001` homescreen app that runs the
 exploit, boots elfldr, and autoloads your payload through it.
+
+## Fork delta
+
+This is a fork of [itsPLK/ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader).
+The exploit chains, caching design, installer and PC host are unchanged. Only three
+things differ:
+
+| | Upstream | This fork |
+|---|---|---|
+| Bundled `payload.elf` | `itsPLK/ps5-unified-autoloader` | `bsk193/ps5-unified-autoloader-x` |
+| Fallback payload manager | Payload Manager (official) | [Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x), port 8084 |
+| Homescreen app identity | `WKAL00001` / "WebKit Autoloader" | `WKLX00001` / "WebKit Autoloader X" |
+
+The distinct title ID means this app installs **alongside** the official autoloader
+instead of overwriting it. To make it a true drop-in replacement instead, set it back
+to `WKAL00001` in **both** `assets/param.json.template` (`titleId`) and
+`include/wkali.h` (`WKAL_TITLE_ID`) — the two must always match.
+
+`ps5-unified-autoloader-x` is itself only a one-dependency fork: it swaps the embedded
+fallback manager and changes nothing about browser handling, app killing, `autoload.txt`
+or `@sync`.
 
 ## Repository layout
 
@@ -23,19 +44,19 @@ exploit, boots elfldr, and autoloads your payload through it.
 | `patches/` | The slopkit and umtx2 autoloader patch files |
 | `tools/` | Build, version, icon, registry scripts, and dependency downloader |
 | `assets/` | Icon source and PS5 app metadata templates |
-| `third_party/` | `slopkit`, `umtx2`, `ps5-elfldr` and `ps5-unified-autoloader` submodules (pinned) |
+| `third_party/` | `slopkit`, `umtx2`, `ps5-elfldr` and `ps5-unified-autoloader-x` submodules (pinned) |
 
 ## Two setup flows
 
 **Installer ELF (already jailbroken).** Send `webkit-autoloader-installer_v*.elf` to the console
-(elfldr or Payload Manager). It opens the browser once to cache the frontend via AppCache,
-creates the `WKAL00001` app only after that cache succeeds, then exits. From then on the app
+(elfldr or a payload manager). It opens the browser once to cache the frontend via AppCache,
+creates the `WKLX00001` app only after that cache succeeds, then exits. From then on the app
 runs the chain offline from the cache.
 
 **PC host (not jailbroken).** Run `webkit-autoloader-host_v*.py` / `.exe` on a PC, point the
 console's DNS at it, and open the User's Guide. The host spoofs `manuals.playstation.net`
 (DNS + self-signed HTTPS) and serves the same frontend, but autoloads the **installer ELF**
-instead of the unified-autoloader — so this flow installs the homescreen app.
+instead of the unified-autoloader-x — so this flow installs the homescreen app.
 
 ## Frontend (`frontend/autoloader/`)
 
@@ -57,7 +78,7 @@ instead of the unified-autoloader — so this flow installs the homescreen app.
   and summary verdicts) and receives the `?autoload` result via `postMessage`.
 
 `payload.elf` is a virtual name: the PC host serves the installer ELF there, the homescreen app
-serves the real unified-autoloader. Both exploits autoload the same `payload.elf`. umtx2 (FW
+serves the real unified-autoloader-x. Both exploits autoload the same `payload.elf`. umtx2 (FW
 1.00–5.50) boots its **own bundled elfldr** (`/app/<version>/umtx2/payloads/elfldr-ps5.elf`, kept
 from the umtx2 submodule like stock umtx2); slopkit (9.00–12.00) boots the **shared elfldr**
 (`/app/<version>/shared/elfldr-ps5.elf`).
@@ -71,7 +92,7 @@ A PS5 payload running a `libmicrohttpd` server on port **18181**:
 2. Frontend files are embedded **compressed** (raw DEFLATE via `src/inflate.c`, the vendored
    puff) and inflated on demand.
 3. The browser caches everything through `cache.appcache`, then hits `/install`. The ELF
-   installs/updates the `WKAL00001` homescreen app and shuts down only after the cache is
+   installs/updates the `WKLX00001` homescreen app and shuts down only after the cache is
    confirmed complete. If the user closes the browser mid-load, no `/install` is ever hit,
    so no shortcut is created/updated and the previously-installed version stays untouched (the
    installer process simply keeps running until a subsequent run kills it). The master URL
@@ -190,9 +211,15 @@ the umtx2 submodule instead, matching stock umtx2 behavior. Future shared chain 
 ## Payload dependency
 
 `tools/download_deps.sh` (the Makefile's `payload-deps` target) downloads
-`frontend/autoloader/payloads/payload.elf` from the `ps5-unified-autoloader` submodule's pinned
+`frontend/autoloader/payloads/payload.elf` from the `ps5-unified-autoloader-x` submodule's pinned
 GitHub release, sha256-verifies it, and caches the digest in a `.sha256` sidecar so offline
 rebuilds work. Bump the submodule to pick up a newer release.
+
+Because the pinned release is resolved with `git describe --tags` on the submodule, the
+submodule must be checked out at a commit that carries a release tag in
+`bsk193/ps5-unified-autoloader-x`. The release order is therefore: publish a
+`ps5-unified-autoloader-x` release first, then point this submodule at that tag. See
+[FORK.md](FORK.md).
 
 ## Versioning
 

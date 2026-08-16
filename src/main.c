@@ -1,5 +1,5 @@
 /*
- * WebKit Autoloader Installer - Main Entry Point
+ * WebKit Autoloader X Installer - Main Entry Point
  *
  * This is a native PS5 ELF that starts a temporary HTTP server, opens the
  * browser to cache a page (or set of pages), installs the homescreen shortcut
@@ -88,7 +88,7 @@ int main(void) {
         sleep(1);
     }
 
-    wkali_log("[WKALI] WebKit Autoloader Installer v%s by PLK (built %s) starting on port %d...\n",
+    wkali_log("[WKALI] WebKit Autoloader X Installer v%s (built %s) starting on port %d...\n",
                    WKAL_FULL_VERSION, WKAL_BUILD_TIME, WKALI_PORT);
 
     /* Initialize PS5 System Services */
@@ -122,7 +122,7 @@ int main(void) {
 
     if (NULL == daemon) {
         wkali_log("[WKALI] Failed to start HTTP daemon!\n");
-        wkali_notify("WebKit Autoloader Installer: Error\nHTTP server failed to start");
+        wkali_notify("WebKit Autoloader X Installer: Error\nHTTP server failed to start");
         return 1;
     }
 
@@ -141,7 +141,7 @@ int main(void) {
         usleep(100000); /* 100ms sleep */
     }
 
-    wkali_notify("WebKit Autoloader v%s cached successfully!", WKAL_FULL_VERSION);
+    wkali_notify("WebKit Autoloader X v%s cached successfully!", WKAL_FULL_VERSION);
     wkali_log_wakeup();
 
     /* Give the /logs thread half a second to wake up and flush the final logs 

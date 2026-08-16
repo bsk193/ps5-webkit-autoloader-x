@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# Download the shared ps5-elfldr ELF and the ps5-unified-autoloader payload
+# Download the shared ps5-elfldr ELF and the ps5-unified-autoloader-x payload
 # ELF from their GitHub releases, pinned to the third_party/ submodules.
 #
-#   third_party/ps5-elfldr             -> frontend/autoloader/shared/elfldr-ps5.elf
-#   third_party/ps5-unified-autoloader -> frontend/autoloader/payloads/payload.elf
+#   third_party/ps5-elfldr               -> frontend/autoloader/shared/elfldr-ps5.elf
+#   third_party/ps5-unified-autoloader-x -> frontend/autoloader/payloads/payload.elf
+#
+# Fork note: the payload is bsk193/ps5-unified-autoloader-x, which embeds
+# Payload Manager X as its no-autoload.txt fallback instead of the official
+# Payload Manager. It is otherwise upstream ps5-unified-autoloader.
 #
 # The shared elfldr is used by the slopkit chain (9.00-12.00); umtx2
 # (1.00-5.50) boots its own elfldr from the umtx2 submodule, like stock umtx2.
@@ -36,9 +40,9 @@ ELFLDR_REPO="itsPLK/ps5-elfldr"
 ELFLDR_TAG="v0.24-148b71c"
 ELFLDR_DEST="$ROOT/frontend/autoloader/shared/elfldr-ps5.elf"
 
-# Bundled autoload payload
-PAYLOAD_SUBMODULE="$ROOT/third_party/ps5-unified-autoloader"
-PAYLOAD_REPO="itsPLK/ps5-unified-autoloader"
+# Bundled autoload payload (unified autoloader + embedded Payload Manager X)
+PAYLOAD_SUBMODULE="$ROOT/third_party/ps5-unified-autoloader-x"
+PAYLOAD_REPO="bsk193/ps5-unified-autoloader-x"
 PAYLOAD_DEST="$ROOT/frontend/autoloader/payloads/payload.elf"
 
 # Fetch the pinned release, verify the payload, and download it if needed.
@@ -164,7 +168,7 @@ if [ ! -e "$ELFLDR_SUBMODULE/.git" ]; then
 fi
 
 if [ ! -e "$PAYLOAD_SUBMODULE/.git" ]; then
-    echo "Error: ps5-unified-autoloader submodule is not initialised."
+    echo "Error: ps5-unified-autoloader-x submodule is not initialised."
     echo "Run: git submodule update --init --recursive"
     exit 1
 fi

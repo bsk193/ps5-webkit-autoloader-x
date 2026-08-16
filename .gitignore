@@ -3,7 +3,7 @@
 *.bin
 *.o
 
-# Downloaded ps5-unified-autoloader payload (scripts/download_deps.sh) + digest sidecar
+# Downloaded ps5-unified-autoloader-x payload (scripts/download_deps.sh) + digest sidecar
 frontend/autoloader/payloads/
 
 # Generated File Registry

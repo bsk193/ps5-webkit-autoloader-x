@@ -1,7 +1,7 @@
 # PC Host (ps5-webkit-autoloader)
 
 A zero-dependency Python script that turns your PC into a local DNS + HTTPS
-server for the PS5 WebKit Autoloader. No `pip install` required — only the
+server for the PS5 WebKit Autoloader X. No `pip install` required — only the
 Python 3 standard library.
 
 ## What it does
