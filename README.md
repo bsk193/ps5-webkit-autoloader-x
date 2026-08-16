@@ -7,12 +7,12 @@
 
 > [!IMPORTANT]
 > **This is a fork of [itsPLK/ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader).**
-> The only difference is the payload manager it falls back to: this build loads
-> **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)** (port **8084**) instead of the
-> official [Payload Manager](https://github.com/itsPLK/ps5-payload-manager).
+> It loads **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)** (port **8084**)
+> instead of the official [Payload Manager](https://github.com/itsPLK/ps5-payload-manager), and it starts it
+> **every launch** rather than only as a fallback when no `autoload.txt` exists.
 >
-> The exploit chain, `autoload.txt` handling, browser handling and app killing are all unchanged upstream behaviour.
-> It installs as a **separate** homescreen app (`WKLX00001`, "WebKit Autoloader X"), so it can coexist with the
+> The exploit chain, browser handling and app killing are unchanged upstream behaviour.
+> It installs as a **separate** homescreen app called **Jailbreak** (`WKLX00001`), so it coexists with the
 > official autoloader rather than replacing it.
 
 > [!NOTE]
@@ -32,7 +32,7 @@ WebKit exploits are usually loaded by pointing your PS5's DNS at some server hos
 This autoloader does it differently:
 
 - **Fully offline, no third-party DNS.** After a one-time install from your PC, everything is served straight from your PS5. There's nothing external to go down or change behind your back.
-- **One-time setup, then a homescreen shortcut.** Once it's installed, you don't need a PC or the network at all — just launch "WebKit Autoloader X" from the homescreen and you're done.
+- **One-time setup, then a homescreen shortcut.** Once it's installed, you don't need a PC or the network at all — just launch "Jailbreak" from the homescreen and you're done.
 - **Payloads loaded the way you already know.** After the exploit chain runs, your payloads are sent just like in [Y2JB](https://github.com/itsPLK/ps5-y2jb-autoloader) / [BD-JB](https://github.com/itsPLK/ps5-bdjb-autoloader) / [Lua](https://github.com/itsPLK/ps5-lua-autoloader) autoloaders — via **Payload Manager X**, or a custom `autoload.txt`.
 
 ## Setup Instructions
@@ -43,8 +43,8 @@ There are two ways to set up the autoloader, depending on whether you're already
 
 1. Download `webkit-autoloader-installer_vX.Y.Zx.elf` from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) page.
 2. Send it to your PS5 with `elfldr`, or launch it from a payload manager.
-3. The installer opens the browser once to cache the autoloader page, then creates the **WebKit Autoloader X** app on the homescreen and exits.
-4. **Reboot once**, then launch **WebKit Autoloader X** from the homescreen.
+3. The installer opens the browser once to cache the autoloader page, then creates the **Jailbreak** app on the homescreen and exits.
+4. **Reboot once**, then launch **Jailbreak** from the homescreen.
 
 ### Not jailbroken yet
 
@@ -52,8 +52,8 @@ If you aren't jailbroken yet, you'll need to host the exploit locally on your PC
 
 1. Download `webkit-autoloader-host.py` (or the `.exe`) from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) and run it on a PC on your network.
 2. On your PS5, set your network's DNS server to your PC's IP address.
-3. Open the **User's Guide** from Settings to run the installer, which adds the **WebKit Autoloader X** app to your homescreen.
-4. **Reboot once**, then launch **WebKit Autoloader X** from the homescreen.
+3. Open the **User's Guide** from Settings to run the installer, which adds the **Jailbreak** app to your homescreen.
+4. **Reboot once**, then launch **Jailbreak** from the homescreen.
 
 ## How to Use
 
@@ -61,9 +61,11 @@ There are two ways to configure payloads:
 
 ### 🟢 Option 1: Payload Manager X
 
-If no `autoload.txt` config is found, the autoloader will automatically launch **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)** — a fully-featured PS5 payload manager with a web UI, served on **port 8084**. This lets you configure and send payloads directly from your browser, without needing to manually set up config files or transfer ELF files ahead of time.
+**[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)** — a fully-featured PS5 payload manager with a web UI, served on **port 8084** — is launched **every time**, whether or not you have an `autoload.txt`. Browse to `http://<your-PS5-IP>:8084` to configure and send payloads, without needing to set up config files or transfer ELF files ahead of time.
 
-Just run the autoloader — if there's nothing configured, Payload Manager X starts automatically.
+Just run **Jailbreak** from the homescreen; Payload Manager X comes up on its own.
+
+> This differs from upstream, where the manager is a *fallback* that only starts when no `autoload.txt` is found — meaning a leftover config would silently suppress it.
 
 > **Note:** Payload Manager X also has its own built-in autoload feature, which lets you configure payloads to load automatically on startup — all managed through its web UI. This is separate from the `autoload.txt` mechanism described below.
 
@@ -82,7 +84,7 @@ For a fixed, automated payload chain, you can configure payloads manually:
   - Root of a USB drive
   - Internal drive: `/data/ps5_autoloader`
 
-> **Note:** When an `autoload.txt` config is found, Payload Manager X is **not** launched automatically. If you also want it available, place the `pldmgrx_v*.elf` from the [Payload Manager X releases](https://github.com/bsk193/ps5-payload-manager-x/releases) in your `ps5_autoloader` directory and add it to `autoload.txt`.
+> **Note:** Your `autoload.txt` payloads run first, then Payload Manager X starts about 2 seconds later. You do **not** need to add `pldmgrx` to `autoload.txt` — it is always launched.
 
 ## Additional Info
 

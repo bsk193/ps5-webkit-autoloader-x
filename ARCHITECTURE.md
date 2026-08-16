@@ -19,16 +19,15 @@ things differ:
 | | Upstream | This fork |
 |---|---|---|
 | Bundled `payload.elf` | `itsPLK/ps5-unified-autoloader` | `bsk193/ps5-unified-autoloader-x` |
-| Fallback payload manager | Payload Manager (official) | [Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x), port 8084 |
-| Homescreen app identity | `WKAL00001` / "WebKit Autoloader" | `WKLX00001` / "WebKit Autoloader X" |
+| Payload manager | Payload Manager (official), fallback only | [Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x) port 8084, **always launched** |
+| Homescreen app identity | `WKAL00001` / "WebKit Autoloader" | `WKLX00001` / "Jailbreak" |
 
 The distinct title ID means this app installs **alongside** the official autoloader
 instead of overwriting it. To make it a true drop-in replacement instead, set it back
 to `WKAL00001` in **both** `assets/param.json.template` (`titleId`) and
 `include/wkali.h` (`WKAL_TITLE_ID`) — the two must always match.
 
-`ps5-unified-autoloader-x` is itself only a one-dependency fork: it swaps the embedded
-fallback manager and changes nothing about browser handling, app killing, `autoload.txt`
+`ps5-unified-autoloader-x` is itself only a one-dependency fork: it swaps the embedded manager and makes it always launch; it changes nothing about browser handling, app killing, `autoload.txt`
 or `@sync`.
 
 ## Repository layout

@@ -10,12 +10,16 @@ official Payload Manager.
 bsk193/ps5-webkit-autoloader-x          (this repo — exploit chain + installer)
   └─ payload.elf
      = bsk193/ps5-unified-autoloader-x  (fork: browser handling, app kill, autoload.txt)
-        └─ embedded fallback manager
+        └─ always-launched manager
            = bsk193/ps5-payload-manager-x  (pldmgrx, HTTP port 8084)
 ```
 
-Each link is a **single-dependency swap**. No exploit, caching, or autoload logic was modified
-in either fork.
+No exploit or caching logic was modified in either fork. The one behavioural change is in
+`ps5-unified-autoloader-x`: upstream launches the embedded manager **only** when no
+`autoload.txt` is found, so a leftover config silently suppresses it. This fork always launches
+it, treating `autoload.txt` as an additional payload chain rather than an alternative — its
+payloads run first, then the manager starts after a 2 s pause
+(`PLDMGRX_LAUNCH_DELAY_US` in `include/autoloader.h`).
 
 ## What actually changed here
 
@@ -23,10 +27,21 @@ in either fork.
 |---|---|
 | `.gitmodules` | `third_party/ps5-unified-autoloader` → `third_party/ps5-unified-autoloader-x` (`bsk193/…`) |
 | `tools/download_deps.sh` | `PAYLOAD_SUBMODULE` / `PAYLOAD_REPO` point at the fork |
-| `include/wkali.h` | `WKAL_VERSION` → `0.3.0x`; `WKAL_TITLE_ID` → `WKLX00001` |
-| `assets/param.json.template` | `titleId` → `WKLX00001`, `titleName` → "WebKit Autoloader X" |
+| `include/wkali.h` | `WKAL_VERSION` → `0.3.1x`; `WKAL_TITLE_ID` → `WKLX00001` |
+| `assets/param.json.template` | `titleId` → `WKLX00001`, `titleName` → "Jailbreak" (no version suffix) |
+| `assets/icon.svg` | Replaced with a broken-chain-link jailbreak icon |
 | `README.md`, `ARCHITECTURE.md` | Fork notes, branding, links |
 | Misc source/build files | Branding strings only ("WebKit Autoloader" → "WebKit Autoloader X") |
+
+The homescreen label is plain **"Jailbreak"** with no version. `gen_version.py` substitutes
+`[[VERSION_PLACEHOLDER]]` in the template; the placeholder is simply absent now, and
+`bytes.replace` on a missing needle is a no-op, so nothing breaks.
+
+All derived icon assets (`icon0.png`, `icon.ico`, the two `favicon.svg`s and the two
+`logo.svg`s) are generated from `assets/icon.svg` by `tools/gen_icons.py` via `make icons`,
+which needs `rsvg-convert` — present in the SDK Docker image used by CI. Keep the master art
+inside a circle of radius ~510 centred on (512, 512); `gen_icons.py`'s `ART_RADIUS` constant
+assumes that extent when it computes padding.
 
 `WKAL_TITLE_ID` and `param.json.template`'s `titleId` **must always match** — `app_installer.c`
 builds the app's install paths from the C constant while the metadata comes from the template.
