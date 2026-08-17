@@ -33,8 +33,16 @@ LOGO_INSTALLER = os.path.join(ROOT, "frontend", "installer-page", "logo.svg")
 LOGO_AUTOLOADER = os.path.join(ROOT, "frontend", "autoloader", "logo.svg")
 
 VIEWBOX = 1024
-ART_RADIUS = 510.04  # outermost extent of the master art (ring reaches y=1022.08)
-PAD_FRACTION = 0.1
+# The master is full-bleed artwork that already carries its own background and
+# framing (assets/icon.png, embedded by tools/embed_icon_png.py), so the pipeline
+# must not inset it further: ART_RADIUS = VIEWBOX/2 and no padding give SCALE=1.0
+# and TRANSLATE=0, i.e. the tile is pixel-for-pixel the supplied art.
+#
+# For vector master art that does NOT fill the canvas, set PAD_FRACTION back to
+# 0.1 and ART_RADIUS to the outermost extent of the art, so it gets inset with
+# the dark background showing around it.
+ART_RADIUS = VIEWBOX / 2.0
+PAD_FRACTION = 0.0
 SCALE = (1.0 - 2.0 * PAD_FRACTION) * (VIEWBOX / 2.0) / ART_RADIUS
 TRANSLATE = VIEWBOX * (1.0 - SCALE) / 2.0
 ICO_SIZES = [16, 24, 32, 48, 64, 128, 256]
