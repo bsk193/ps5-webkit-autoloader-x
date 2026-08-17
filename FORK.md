@@ -54,6 +54,31 @@ The title ID is deliberately different from upstream's `WKAL00001`, so this inst
 **second** homescreen app next to the official autoloader. To make it a true drop-in replacement
 that overwrites the official app instead, set **both** values back to `WKAL00001`.
 
+## Versioning
+
+`WKAL_VERSION` in `include/wkali.h` is `<PLK version>.<fork build>x`:
+
+```
+0 . 3 . 0 . 4 x
+\_______/  |  \_ marks the Payload Manager X variant
+    |      \____ ours: bump on every fork release
+    \___________ upstream PLK's WKAL_VERSION, tracked verbatim
+```
+
+The first three components state exactly which PLK release this build is based on, so the
+fork's lineage is readable at a glance in the installer banner and the release tag.
+
+- **We change something** → bump only the last component (`0.3.0.4x` → `0.3.0.5x`).
+- **PLK releases a new version** → merge upstream, take their number, reset the fork build
+  to 1 (PLK `0.3.1` → `0.3.1.1x`).
+
+Never invent a prefix PLK has not released; that was the flaw in the original `0.3.0x`…`0.3.3x`
+numbering, which implied upstream releases 0.3.1–0.3.3 that do not exist.
+
+> `ps5-unified-autoloader-x` still uses the old style (`0.1.5x`, against upstream `0.1.4`).
+> Renumber it to `0.1.4.<n>x` the next time it actually changes — releasing it purely to
+> renumber would add a tag and a submodule re-pin for no functional gain.
+
 ## Release procedure
 
 `tools/download_deps.sh` resolves the payload with `git describe --tags` on the
