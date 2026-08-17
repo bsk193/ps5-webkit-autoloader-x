@@ -36,6 +36,7 @@ WKALI_H = os.path.join(REPO, "include", "wkali.h")
 PARAM_JSON = os.path.join(REPO, "assets", "param.json")
 PARAM_TEMPLATE = os.path.join(REPO, "assets", "param.json.template")
 VERSION_PLACEHOLDER = b"[[VERSION_PLACEHOLDER]]"
+PORT_PLACEHOLDER = b"[[PORT_PLACEHOLDER]]"
 
 
 def read_base_version():
@@ -49,6 +50,22 @@ def read_base_version():
     except OSError:
         pass
     return "0.0.0"
+
+
+def read_port():
+    """Read WKALI_PORT from include/wkali.h.
+
+    The deeplink in param.json must point at the same port the installer serves
+    on — the port is part of the AppCache origin, so a mismatch means the
+    homescreen app opens a URL that was never cached. Substituting it from the
+    header keeps the two from drifting.
+    """
+    with open(WKALI_H) as f:
+        content = f.read()
+    m = re.search(r"#define\s+WKALI_PORT\s+(\d+)", content)
+    if not m:
+        sys.exit("Error: could not find WKALI_PORT in include/wkali.h")
+    return m.group(1)
 
 
 def git(*args):
@@ -136,13 +153,16 @@ def main(argv=None):
 
     write_if_changed(HEADER, header_text(info).encode("utf-8"))
 
-    # PS5 homescreen app metadata — title gets the base version (or the full
-    # custom version) so the app label reflects what was built.
+    # PS5 homescreen app metadata. The label is a fixed string ("Jailbreak"), so
+    # VERSION_PLACEHOLDER is usually absent — bytes.replace is a no-op then, and
+    # the substitution still works if a version is ever put back in the label.
+    # PORT_PLACEHOLDER comes from WKALI_PORT so the deeplink and the server port
+    # cannot drift apart.
     with open(PARAM_TEMPLATE, "rb") as f:
         param = f.read()
-    write_if_changed(
-        PARAM_JSON, param.replace(VERSION_PLACEHOLDER, info["title"].encode("utf-8"))
-    )
+    param = param.replace(VERSION_PLACEHOLDER, info["title"].encode("utf-8"))
+    param = param.replace(PORT_PLACEHOLDER, read_port().encode("utf-8"))
+    write_if_changed(PARAM_JSON, param)
     return 0
 
 

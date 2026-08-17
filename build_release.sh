@@ -10,14 +10,19 @@ if [ -z "$VERSION" ]; then
 fi
 
 OUTPUT_ELF="webkit-autoloader-installer_v${VERSION}.elf"
+LOCAL_ELF_OUT="jailbreak-local-installer_v${VERSION}.elf"
 HOST_PY="webkit-autoloader-host_v${VERSION}.py"
 IMAGE_NAME="ps5-webkit-autoloader-sdk"
+
+# Host[:port] baked into the "Jailbreak (Local)" shortcut.
+LOCAL_HOST="${LOCAL_HOST:-192.168.1.139:6969}"
 
 echo "--- Building WebKit Autoloader X Installer v$VERSION ---"
 
 # 2. Remove old versioned artifacts
-rm -f webkit-autoloader-installer_v*.elf webkit-autoloader-host_v*.py
-echo "      Removed old artifacts (webkit-autoloader-installer_v*.elf, webkit-autoloader-host_v*.py)"
+rm -f webkit-autoloader-installer_v*.elf webkit-autoloader-host_v*.py \
+      jailbreak-local-installer_v*.elf
+echo "      Removed old artifacts (webkit-autoloader-installer_v*.elf, jailbreak-local-installer_v*.elf, webkit-autoloader-host_v*.py)"
 
 # 3. Build/verify the docker image (includes librsvg for icon generation)
 if [[ "$(docker images -q $IMAGE_NAME 2> /dev/null)" == "" ]]; then
@@ -34,7 +39,7 @@ fi
 #    Note: docker does NOT inherit the host environment, so BUILD_TYPE,
 #    FORCE_EXPLOIT and CUSTOM_VERSION must be passed explicitly or defaults
 #    ("dev"/"auto"/empty) apply.
-echo "[1/2] Building native ELF via Docker..."
+echo "[1/3] Building native ELF via Docker..."
 docker run --rm -u "$(id -u):$(id -g)" -e "BUILD_TYPE=${BUILD_TYPE:-dev}" -e "FORCE_EXPLOIT=${FORCE_EXPLOIT:-auto}" -e "CUSTOM_VERSION=${CUSTOM_VERSION:-}" -v "$(pwd)":/src -w /src $IMAGE_NAME make clean all
 
 if [ $? -ne 0 ]; then
@@ -50,10 +55,28 @@ else
     exit 1
 fi
 
+# 4b. Build the "Jailbreak (Local)" shortcut-only installer. Separate optional
+#     download — it is NOT bundled into the host script or the normal ELF.
+echo "[2/3] Building the Jailbreak (Local) installer (-> http://${LOCAL_HOST})..."
+docker run --rm -u "$(id -u):$(id -g)" -e "BUILD_TYPE=${BUILD_TYPE:-dev}" -e "CUSTOM_VERSION=${CUSTOM_VERSION:-}" -e "LOCAL_HOST=${LOCAL_HOST}" -v "$(pwd)":/src -w /src $IMAGE_NAME make local LOCAL_HOST="${LOCAL_HOST}"
+
+if [ $? -ne 0 ]; then
+    echo "      !!! Local installer build FAILED!"
+    exit 1
+fi
+
+if [ -f "installer-local.elf" ]; then
+    mv installer-local.elf "$LOCAL_ELF_OUT"
+    echo "      Created versioned binary: $LOCAL_ELF_OUT"
+else
+    echo "      !!! installer-local.elf not found after build!"
+    exit 1
+fi
+
 # 5. Build standalone webkit-autoloader-host.py with the frontend embedded.
 #    HOST_PAYLOAD points at the versioned installer ELF built in step 4 (the
 #    PC host serves it as the autoload payload instead of the bundled one).
-echo "[2/2] Building webkit-autoloader-host.py (embedded frontend)..."
+echo "[3/3] Building webkit-autoloader-host.py (embedded frontend)..."
 make host HOST_PAYLOAD="$OUTPUT_ELF"
 if [ $? -ne 0 ]; then
     echo "      !!! webkit-autoloader-host.py build FAILED!"
@@ -64,5 +87,5 @@ echo "      Created: $HOST_PY"
 
 echo "--- Build Complete! ---"
 echo "Note: Windows executable (.exe) is built via GitHub Actions."
-ls -la "$OUTPUT_ELF" "$HOST_PY"
+ls -la "$OUTPUT_ELF" "$LOCAL_ELF_OUT" "$HOST_PY"
 

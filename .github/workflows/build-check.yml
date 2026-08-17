@@ -1,0 +1,78 @@
+name: Build Check
+
+# Compiles both installer variants without publishing anything, so changes can
+# be validated against the real PS5 SDK toolchain before a release is cut.
+# Uploads the ELFs as short-lived artifacts for inspection.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        type: string
+        required: false
+        default: main
+      local_host:
+        description: 'host:port baked into the Jailbreak (Local) shortcut'
+        type: string
+        required: false
+        default: '192.168.1.139:6969'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TYPE: dev
+      LOCAL_HOST: ${{ inputs.local_host }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Build both installer variants
+        run: |
+          chmod +x build_release.sh
+          ./build_release.sh
+
+      - name: Show what was produced
+        run: |
+          echo "--- artifacts ---"
+          ls -la webkit-autoloader-installer_v*.elf \
+                 jailbreak-local-installer_v*.elf \
+                 webkit-autoloader-host_v*.py
+
+          echo "--- generated app metadata ---"
+          echo "normal:"; cat assets/param.json
+          echo "local:";  cat assets/param_local.json
+
+      - name: Verify the two variants install different apps
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          a = json.load(open('assets/param.json'))
+          b = json.load(open('assets/param_local.json'))
+          print('normal:', a['titleId'], a['deeplinkUri'])
+          print('local :', b['titleId'], b['deeplinkUri'])
+          fail = []
+          if a['titleId'] == b['titleId']:
+              fail.append('title IDs collide — the two apps would overwrite each other')
+          if a['titleId'] == 'WKAL00001' or b['titleId'] == 'WKAL00001':
+              fail.append("title ID collides with upstream PLK's WKAL00001")
+          if '18181' in a['deeplinkUri']:
+              fail.append("deeplink still on upstream's port 18181 — AppCache would be shared")
+          if fail:
+              sys.exit('FAIL: ' + '; '.join(fail))
+          print('OK: distinct title IDs, and the cached variant is off upstream\'s port')
+          PY
+
+      - name: Upload built ELFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-check
+          path: |
+            webkit-autoloader-installer_v*.elf
+            jailbreak-local-installer_v*.elf
+          retention-days: 3

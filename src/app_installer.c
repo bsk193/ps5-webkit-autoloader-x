@@ -1,5 +1,5 @@
 /*
- * PS5 Homescreen App Installer for the WebKit Autoloader X Installer.
+ * PS5 Homescreen App Installer, shared by both installer variants.
  * Based on the original implementation in ftpsrv by John Törnblom
  * and Payload Manager by PLK.
  */
@@ -28,7 +28,13 @@
   extern const uint8_t name[];                                                 \
   extern const size_t name##_size;
 
+/* The two variants install different apps, so they embed different metadata.
+ * The icon is shared — only the title ID, label and deeplink differ. */
+#ifdef WKAL_VARIANT_LOCAL
+INCASSET(param_json, "assets/param_local.json");
+#else
 INCASSET(param_json, "assets/param.json");
+#endif
 INCASSET(icon0_png, "assets/icon0.png");
 
 int sceAppInstUtilInitialize(void);
@@ -155,10 +161,10 @@ int wkali_install_app_if_needed(void) {
 
   if (stat(base_dir, &st) == 0) {
     wkali_log("[WKALI] Updating existing app launcher (%s)...\n", title_id);
-    wkali_notify("Updating WebKit Autoloader X App...");
+    wkali_notify("Updating " WKAL_APP_LABEL " app...");
   } else {
     wkali_log("[WKALI] Installing browser launcher app (%s)...\n", title_id);
-    wkali_notify("Installing WebKit Autoloader X App...");
+    wkali_notify("Installing " WKAL_APP_LABEL " app...");
   }
 
   int err;
@@ -195,7 +201,7 @@ int wkali_install_app_if_needed(void) {
   }
 
   wkali_log("[WKALI] Launcher app installed successfully.\n");
-  wkali_notify("WebKit Autoloader X App Ready!");
+  wkali_notify(WKAL_APP_LABEL " app ready!");
 
   sceAppInstUtilTerminate();
   return 0;

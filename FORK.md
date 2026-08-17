@@ -48,6 +48,58 @@ assumes that extent when it computes padding.
 `WKAL_TITLE_ID` and `param.json.template`'s `titleId` **must always match** — `app_installer.c`
 builds the app's install paths from the C constant while the metadata comes from the template.
 
+## Three coexisting installs
+
+|  | Upstream PLK | This fork | Local variant |
+|---|---|---|---|
+| Title ID | `WKAL00001` | `WKLX00001` | `WKLL00001` |
+| Homescreen label | WebKit Autoloader | Jailbreak | Jailbreak (Local) |
+| Deeplink | `127.0.0.1:18181/app/index.html` | `127.0.0.1:18282/app/index.html` | `http://<LOCAL_HOST>` |
+| Installer HTTP server | port 18181 | port 18282 | none |
+| AppCache | yes | yes | none |
+| Artifact | upstream's | `webkit-autoloader-installer_v*.elf` | `jailbreak-local-installer_v*.elf` |
+
+Two things must differ for all three to coexist:
+
+- **Title ID** — the app is installed to `/user/app/<title_id>/`, so a shared ID means one
+  app overwrites the other.
+- **Port** — AppCache is keyed by origin, and the port is part of the origin. Upstream and
+  this fork both cache a page at `127.0.0.1:<port>/app/index.html`; on a shared port they
+  would share one cache entry and each launch would clobber the other's cached autoloader.
+  That is why this fork moved to **18282**.
+
+`WKALI_PORT` in `include/wkali.h` is the single source of truth for the port —
+`gen_version.py` substitutes it into the deeplink via `[[PORT_PLACEHOLDER]]`, so the served
+port and the deeplink cannot drift apart.
+
+> Moving off 18181 orphans any AppCache a previous build of this fork left at the old port.
+> Re-running the installer (which you do to update anyway) caches fresh at 18282; the stale
+> 18181 entry is simply no longer referenced.
+
+### The "Jailbreak (Local)" variant
+
+A separate, **optional** download — not bundled into the normal installer or the PC host. It
+installs a homescreen shortcut pointing at a host on your LAN and exits. No HTTP server, no
+browser launch, no AppCache, no frontend embedded; it shares `app_installer.c` with the normal
+installer, so the shortcut is created by exactly the same method.
+
+Because the page lives on a remote host it is fetched over the network every launch — this
+variant needs no cache, and equally does not work offline.
+
+Build it with:
+
+```bash
+make local                                # default 192.168.1.139:6969
+make local LOCAL_HOST=192.168.1.50:8080   # any other host:port
+```
+
+`LOCAL_HOST` is validated (`host[:port]`, no scheme, port in range) and baked into
+`assets/param_local.json`; `build_release.sh` honours the same variable. The variant is
+selected at compile time with `-DWKAL_VARIANT_LOCAL`, which switches `WKAL_TITLE_ID`,
+`WKAL_APP_LABEL`, the thread name and the embedded param asset.
+
+The icon is shared with the normal build — only the label distinguishes the two tiles.
+
 ### Coexistence vs. drop-in
 
 The title ID is deliberately different from upstream's `WKAL00001`, so this installs as a

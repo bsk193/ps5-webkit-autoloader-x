@@ -1,11 +1,11 @@
 {
-    "titleId": "WKLX00001",
+    "titleId": "WKLL00001",
     "applicationCategoryType": 65536,
-    "deeplinkUri": "http://127.0.0.1:[[PORT_PLACEHOLDER]]/app/index.html",
+    "deeplinkUri": "http://[[LOCAL_HOST_PLACEHOLDER]]",
     "localizedParameters": {
         "defaultLanguage": "en-US",
         "en-US": {
-            "titleName": "Jailbreak"
+            "titleName": "Jailbreak (Local)"
         }
     }
 }

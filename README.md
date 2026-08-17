@@ -55,6 +55,23 @@ If you aren't jailbroken yet, you'll need to host the exploit locally on your PC
 3. Open the **User's Guide** from Settings to run the installer, which adds the **Jailbreak** app to your homescreen.
 4. **Reboot once**, then launch **Jailbreak** from the homescreen.
 
+### Optional: "Jailbreak (Local)" shortcut
+
+A **separate, optional** download for anyone who hosts the exploit page on their own LAN
+server rather than caching it on the console.
+
+`jailbreak-local-installer_vX.Y.Z.Nx.elf` installs a second homescreen app called
+**Jailbreak (Local)** that opens `http://192.168.1.139:6969` directly. That is all it does —
+no HTTP server, no caching, no payload. Send it with `elfldr`, reboot once, and the tile
+appears alongside the normal **Jailbreak** app.
+
+Since the page is fetched from your server every launch, it always runs whatever you have
+deployed there — but it does **not** work offline or if that machine is down. The normal
+**Jailbreak** app is the offline one.
+
+> Pointing at a different machine means rebuilding: `make local LOCAL_HOST=192.168.1.50:8080`.
+> The address is baked into the app metadata at build time.
+
 ## How to Use
 
 There are two ways to configure payloads:

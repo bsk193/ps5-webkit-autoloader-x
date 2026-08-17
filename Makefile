@@ -19,6 +19,20 @@ SRCS := src/main.c src/http_server.c src/app_installer.c \
         src/notification.c src/ps5_launcher.c src/log.c src/inflate.c
 ELF := installer.elf
 
+# "Jailbreak (Local)" variant: installs a homescreen shortcut pointing at a LAN
+# host and exits. No HTTP server, no browser launch, no AppCache — so it needs
+# neither libmicrohttpd nor the frontend/file registry, just the shared
+# app installer. Built separately and shipped as its own optional download.
+LOCAL_SRCS := src/main_local.c src/app_installer.c src/notification.c src/log.c
+LOCAL_ELF  := installer-local.elf
+LOCAL_LIBS := -L$(TARGET)/lib -lpthread -lSceUserService -lSceSystemService \
+              -lSceAppInstUtil
+PARAM_LOCAL := assets/param_local.json
+
+# Host[:port] the local shortcut opens. Override to build for a different box:
+#   make local LOCAL_HOST=192.168.1.50:8080
+LOCAL_HOST ?= 192.168.1.139:6969
+
 # Generated file registry
 FILE_REGISTRY_H := include/file_registry.h
 FILE_REGISTRY_C := include/file_registry.c
@@ -116,6 +130,23 @@ $(ELF): $(FILE_REGISTRY_H) $(FILE_REGISTRY_C) $(SRCS) $(ICON0)
 	@echo "Stripping $(ELF)..."
 	$(STRIP) $(ELF)
 
+# --- "Jailbreak (Local)" shortcut-only installer -------------------------
+# Independent of the frontend pipeline: only the version header (for the build
+# banner), the icon and the generated param_local.json are needed.
+.PHONY: local
+local: $(LOCAL_ELF)
+
+$(PARAM_LOCAL): assets/param.local.json.template include/wkali.h tools/gen_local_param.py
+	@echo "Generating $(PARAM_LOCAL) for $(LOCAL_HOST)..."
+	LOCAL_HOST="$(LOCAL_HOST)" $(PYTHON) tools/gen_local_param.py
+
+$(LOCAL_ELF): version icons $(PARAM_LOCAL) $(LOCAL_SRCS) $(ICON0)
+	@echo "Building $(LOCAL_ELF) (shortcut -> http://$(LOCAL_HOST))..."
+	$(CC) $(CFLAGS) -DWKAL_VARIANT_LOCAL $(LDFLAGS) -o $(LOCAL_ELF) \
+	    $(LOCAL_SRCS) $(LOCAL_LIBS)
+	@echo "Stripping $(LOCAL_ELF)..."
+	$(STRIP) $(LOCAL_ELF)
+
 # The PC host is the one-time setup flow: it serves the installer ELF (the
 # homescreen-app installer) instead of the bundled unified-autoloader-x payload.
 # HOST_PAYLOAD overrides the payload path (build_release.sh passes the
@@ -138,5 +169,6 @@ clean:
 	rm -rf $(FRONTEND_STAGE)
 	rm -f $(ELF) $(FILE_REGISTRY_H) $(FILE_REGISTRY_C) $(FILE_REGISTRY_STAMP)
 	rm -f $(WKAL_HOST) $(VERSION_HEADER)
+	rm -f $(LOCAL_ELF) $(PARAM_LOCAL)
 
-.PHONY: all host dev clean slopkit-prepare umtx2-prepare payload-deps
+.PHONY: all host local dev clean slopkit-prepare umtx2-prepare payload-deps

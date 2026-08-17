@@ -17,6 +17,15 @@ include/wkali_version.h
 # Generated PS5 app metadata (tools/gen_version.py, template: assets/param.json.template)
 assets/param.json
 
+# Generated "Jailbreak (Local)" app metadata (tools/gen_local_param.py,
+# template: assets/param.local.json.template) — the LOCAL_HOST is baked in at
+# build time, so this is per-build and not committed.
+assets/param_local.json
+
+# Local shortcut-only installer ELF (make local)
+installer-local.elf
+jailbreak-local-installer_v*.elf
+
 # Generated icon assets (tools/gen_icons.py, master: assets/icon.svg)
 assets/icon0.png
 assets/icon.ico
