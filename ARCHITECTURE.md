@@ -47,12 +47,12 @@ or `@sync`.
 
 ## Two setup flows
 
-**Installer ELF (already jailbroken).** Send `webkit-autoloader-installer_v*.elf` to the console
+**Installer ELF (already jailbroken).** Send `webkit-autoloader-x-installer_v*.elf` to the console
 (elfldr or a payload manager). It opens the browser once to cache the frontend via AppCache,
 creates the `WKLX00001` app only after that cache succeeds, then exits. From then on the app
 runs the chain offline from the cache.
 
-**PC host (not jailbroken).** Run `webkit-autoloader-host_v*.py` / `.exe` on a PC, point the
+**PC host (not jailbroken).** Run `webkit-autoloader-x-host_v*.py` / `.exe` on a PC, point the
 console's DNS at it, and open the User's Guide. The host spoofs `manuals.playstation.net`
 (DNS + self-signed HTTPS) and serves the same frontend, but autoloads the **installer ELF**
 instead of the unified-autoloader-x — so this flow installs the homescreen app.

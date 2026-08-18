@@ -24,7 +24,7 @@ assets/param_local.json
 
 # Local shortcut-only installer ELF (make local)
 installer-local.elf
-jailbreak-local-installer_v*.elf
+webkit-autoloader-x-installer-local_v*.elf
 
 # Generated icon assets (tools/gen_icons.py, master: assets/icon.svg)
 assets/icon0.png
@@ -49,9 +49,9 @@ frontend/autoloader/shared/
 
 # PC host build artifacts (tools/build_host.py, PyInstaller)
 webkit-autoloader-host.py
-webkit-autoloader-host_v*.py
+webkit-autoloader-x-host_v*.py
 webkit-autoloader-host.exe
-webkit-autoloader-host_v*.exe
+webkit-autoloader-x-host_v*.exe
 webkit-autoloader-host.spec
 build/
 dist/

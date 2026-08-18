@@ -69,8 +69,8 @@ jobs:
         with:
           name: linux-build
           path: |
-            webkit-autoloader-installer_v*.elf
-            webkit-autoloader-host_v*.py
+            webkit-autoloader-x-installer_v*.elf
+            webkit-autoloader-x-host_v*.py
             assets/icon.ico
           retention-days: 1
 
@@ -93,13 +93,13 @@ jobs:
           path: .
 
       - name: Build Windows Executable
-        run: pyinstaller --onefile --noconfirm --icon assets/icon.ico --name webkit-autoloader-host_v${{ needs.build-linux.outputs.full_version }} "webkit-autoloader-host_v${{ needs.build-linux.outputs.full_version }}.py"
+        run: pyinstaller --onefile --noconfirm --icon assets/icon.ico --name webkit-autoloader-x-host_v${{ needs.build-linux.outputs.full_version }} "webkit-autoloader-x-host_v${{ needs.build-linux.outputs.full_version }}.py"
 
       - name: Upload Windows Executable Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: dist/webkit-autoloader-host_v*.exe
+          path: dist/webkit-autoloader-x-host_v*.exe
           retention-days: 1
 
   create-release:
@@ -136,9 +136,9 @@ jobs:
           SHA="${{ needs.build-linux.outputs.sha }}"
           REPO="${{ github.repository }}"
 
-          ELF="webkit-autoloader-installer_v${FULL}.elf"
-          PY="webkit-autoloader-host_v${FULL}.py"
-          EXE="webkit-autoloader-host_v${FULL}.exe"
+          ELF="webkit-autoloader-x-installer_v${FULL}.elf"
+          PY="webkit-autoloader-x-host_v${FULL}.py"
+          EXE="webkit-autoloader-x-host_v${FULL}.exe"
           EXE_BASE="$(basename "${EXE}")"
 
           PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")

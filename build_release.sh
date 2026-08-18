@@ -9,9 +9,9 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
-OUTPUT_ELF="webkit-autoloader-installer_v${VERSION}.elf"
-LOCAL_ELF_OUT="jailbreak-local-installer_v${VERSION}.elf"
-HOST_PY="webkit-autoloader-host_v${VERSION}.py"
+OUTPUT_ELF="webkit-autoloader-x-installer_v${VERSION}.elf"
+LOCAL_ELF_OUT="webkit-autoloader-x-installer-local_v${VERSION}.elf"
+HOST_PY="webkit-autoloader-x-host_v${VERSION}.py"
 IMAGE_NAME="ps5-webkit-autoloader-sdk"
 
 # Host[:port] baked into the "Jailbreak (Local)" shortcut.
@@ -20,9 +20,9 @@ LOCAL_HOST="${LOCAL_HOST:-192.168.1.139:6969}"
 echo "--- Building WebKit Autoloader X Installer v$VERSION ---"
 
 # 2. Remove old versioned artifacts
-rm -f webkit-autoloader-installer_v*.elf webkit-autoloader-host_v*.py \
-      jailbreak-local-installer_v*.elf
-echo "      Removed old artifacts (webkit-autoloader-installer_v*.elf, jailbreak-local-installer_v*.elf, webkit-autoloader-host_v*.py)"
+rm -f webkit-autoloader-x-installer_v*.elf webkit-autoloader-x-host_v*.py \
+      webkit-autoloader-x-installer-local_v*.elf
+echo "      Removed old artifacts (webkit-autoloader-x-installer_v*.elf, webkit-autoloader-x-installer-local_v*.elf, webkit-autoloader-x-host_v*.py)"
 
 # 3. Build/verify the docker image (includes librsvg for icon generation)
 if [[ "$(docker images -q $IMAGE_NAME 2> /dev/null)" == "" ]]; then

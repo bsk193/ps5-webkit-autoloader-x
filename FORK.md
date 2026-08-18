@@ -57,7 +57,7 @@ builds the app's install paths from the C constant while the metadata comes from
 | Deeplink | `127.0.0.1:18181/app/index.html` | `127.0.0.1:18282/app/index.html` | `http://<LOCAL_HOST>` |
 | Installer HTTP server | port 18181 | port 18282 | none |
 | AppCache | yes | yes | none |
-| Artifact | upstream's | `webkit-autoloader-installer_v*.elf` | `jailbreak-local-installer_v*.elf` |
+| Artifact | upstream's | `webkit-autoloader-x-installer_v*.elf` | `webkit-autoloader-x-installer-local_v*.elf` |
 
 Two things must differ for all three to coexist:
 
