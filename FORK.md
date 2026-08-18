@@ -54,8 +54,8 @@ builds the app's install paths from the C constant while the metadata comes from
 |---|---|---|---|
 | Title ID | `WKAL00001` | `WKLX00001` | `WKLL00001` |
 | Homescreen label | WebKit Autoloader | Jailbreak | Jailbreak (Local) |
-| Deeplink | `127.0.0.1:18181/app/index.html` | `127.0.0.1:18282/app/index.html` | `http://<LOCAL_HOST>` |
-| Installer HTTP server | port 18181 | port 18282 | none |
+| Deeplink | `127.0.0.1:18181/app/index.html` | `127.0.0.1:19181/app/index.html` | `http://<LOCAL_HOST>` |
+| Installer HTTP server | port 18181 | port 19181 | none |
 | AppCache | yes | yes | none |
 | Artifact | upstream's | `webkit-autoloader-x-installer_v*.elf` | `webkit-autoloader-x-local-installer_v*.elf` |
 
@@ -66,14 +66,14 @@ Two things must differ for all three to coexist:
 - **Port** — AppCache is keyed by origin, and the port is part of the origin. Upstream and
   this fork both cache a page at `127.0.0.1:<port>/app/index.html`; on a shared port they
   would share one cache entry and each launch would clobber the other's cached autoloader.
-  That is why this fork moved to **18282**.
+  That is why this fork moved to **19181**.
 
 `WKALI_PORT` in `include/wkali.h` is the single source of truth for the port —
 `gen_version.py` substitutes it into the deeplink via `[[PORT_PLACEHOLDER]]`, so the served
 port and the deeplink cannot drift apart.
 
 > Moving off 18181 orphans any AppCache a previous build of this fork left at the old port.
-> Re-running the installer (which you do to update anyway) caches fresh at 18282; the stale
+> Re-running the installer (which you do to update anyway) caches fresh at 19181; the stale
 > 18181 entry is simply no longer referenced.
 
 ### The "Jailbreak (Local)" variant
