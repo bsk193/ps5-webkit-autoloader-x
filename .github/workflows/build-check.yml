@@ -41,7 +41,7 @@ jobs:
         run: |
           echo "--- artifacts ---"
           ls -la webkit-autoloader-x-installer_v*.elf \
-                 webkit-autoloader-x-installer-local_v*.elf \
+                 webkit-autoloader-x-local-installer_v*.elf \
                  webkit-autoloader-x-host_v*.py
 
           echo "--- generated app metadata ---"
@@ -74,5 +74,5 @@ jobs:
           name: build-check
           path: |
             webkit-autoloader-x-installer_v*.elf
-            webkit-autoloader-x-installer-local_v*.elf
+            webkit-autoloader-x-local-installer_v*.elf
           retention-days: 3

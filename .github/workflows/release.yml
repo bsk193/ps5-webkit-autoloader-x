@@ -54,7 +54,7 @@ jobs:
           name: linux-build
           path: |
             webkit-autoloader-x-installer_v*.elf
-            webkit-autoloader-x-installer-local_v*.elf
+            webkit-autoloader-x-local-installer_v*.elf
             webkit-autoloader-x-host_v*.py
             assets/icon.ico
           retention-days: 1
@@ -120,7 +120,7 @@ jobs:
           REPO="${{ github.repository }}"
 
           ELF="webkit-autoloader-x-installer_v${FULL}.elf"
-          LOCAL_ELF="webkit-autoloader-x-installer-local_v${FULL}.elf"
+          LOCAL_ELF="webkit-autoloader-x-local-installer_v${FULL}.elf"
           PY="webkit-autoloader-x-host_v${FULL}.py"
           EXE="webkit-autoloader-x-host_v${FULL}.exe"
           EXE_BASE="$(basename "${EXE}")"

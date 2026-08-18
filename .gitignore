@@ -24,7 +24,7 @@ assets/param_local.json
 
 # Local shortcut-only installer ELF (make local)
 installer-local.elf
-webkit-autoloader-x-installer-local_v*.elf
+webkit-autoloader-x-local-installer_v*.elf
 
 # Generated icon assets (tools/gen_icons.py, master: assets/icon.svg)
 assets/icon0.png

@@ -60,7 +60,7 @@ If you aren't jailbroken yet, you'll need to host the exploit locally on your PC
 A **separate, optional** download for anyone who hosts the exploit page on their own LAN
 server rather than caching it on the console.
 
-`webkit-autoloader-x-installer-local_vX.Y.Z.Nx.elf` installs a second homescreen app called
+`webkit-autoloader-x-local-installer_vX.Y.Z.Nx.elf` installs a second homescreen app called
 **Jailbreak (Local)** that opens `http://192.168.1.139:6969` directly. That is all it does —
 no HTTP server, no caching, no payload. Send it with `elfldr`, reboot once, and the tile
 appears alongside the normal **Jailbreak** app.
