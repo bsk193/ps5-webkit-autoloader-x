@@ -15,6 +15,8 @@
 #include "file_registry.h"
 #include "inflate.h"
 #include "app_installer.h"
+#include "webkit_cleaner.h"
+#include "simulate_corrupt.h"
 
 /* CORS is intentionally `*`: the installer page is also served from the PC
  * host (manuals.playstation.net over HTTPS), which cross-origin XHRs this
@@ -23,9 +25,17 @@
  * Do not restrict unless that flow changes. */
 #define CORS_ORIGIN "*"
 
-/* Shared flag — set to 0 by a successful /install, read by the main loop.
+/* Shared flag — set to 0 by a successful /install or /exit, read by the main loop.
  * atomic so the store in a connection thread is visible to the main loop. */
 atomic_int http_keep_running = 1;
+
+/* Set to 1 only when /install succeeds so shutdown knows to notify success. */
+atomic_int install_completed = 0;
+
+/* Set to 1 by a successful /clear-webkit-data, read by the main loop to
+ * re-launch the browser. atomic so the store in a connection thread is
+ * visible to the main loop. */
+atomic_int webkit_data_cleared = 0;
 
 static void add_cors_headers(struct MHD_Response *resp) {
     MHD_add_response_header(resp, "Access-Control-Allow-Origin", CORS_ORIGIN);
@@ -88,6 +98,7 @@ enum MHD_Result http_on_request(void *cls, struct MHD_Connection *conn,
                                                    MHD_RESPMEM_PERSISTENT);
             MHD_add_response_header(resp, "Content-Type", "text/plain");
             http_status = MHD_HTTP_OK;
+            atomic_store(&install_completed, 1);
             atomic_store(&http_keep_running, 0);
         } else {
             wkali_log("[WKALI] App install failed (%d). Staying up.\n", err);
@@ -97,11 +108,25 @@ enum MHD_Result http_on_request(void *cls, struct MHD_Connection *conn,
             MHD_add_response_header(resp, "Content-Type", "text/plain");
             http_status = MHD_HTTP_INTERNAL_SERVER_ERROR;
         }
+    } else if (strcmp(url, ROUTE_EXIT) == 0) {
+        wkali_log("[WKALI] Exit requested by client. Stopping server...\n");
+        resp = MHD_create_response_from_buffer(2, (void *)"OK",
+                                               MHD_RESPMEM_PERSISTENT);
+        MHD_add_response_header(resp, "Content-Type", "text/plain");
+        http_status = MHD_HTTP_OK;
+        atomic_store(&http_keep_running, 0);
     } else if (strcmp(url, ROUTE_VERSION) == 0) {
         resp = MHD_create_response_from_buffer(strlen(WKAL_FULL_VERSION),
                                                (void *)WKAL_FULL_VERSION,
                                                MHD_RESPMEM_PERSISTENT);
         MHD_add_response_header(resp, "Content-Type", "text/plain");
+        extern int sceUserServiceGetForegroundUser(int *);
+        int uid = -1;
+        if (sceUserServiceGetForegroundUser(&uid) == 0 && uid > 0) {
+            char uid_hdr[32];
+            snprintf(uid_hdr, sizeof(uid_hdr), "%08x", (unsigned int)uid);
+            MHD_add_response_header(resp, "X-User-Id", uid_hdr);
+        }
     } else if (strcmp(url, "/logs") == 0) {
         const char *pos_str = MHD_lookup_connection_value(conn, MHD_GET_ARGUMENT_KIND, "pos");
         size_t pos = 0;
@@ -119,6 +144,24 @@ enum MHD_Result http_on_request(void *cls, struct MHD_Connection *conn,
         } else {
             const char *oom = "500 Internal Server Error\n";
             resp = MHD_create_response_from_buffer(strlen(oom), (void *)oom, MHD_RESPMEM_PERSISTENT);
+        }
+    } else if (strcmp(url, ROUTE_CLEAR_WEBKIT_DATA) == 0) {
+        int err = wkali_clear_webkit_data();
+        if (err == 0) {
+            wkali_log("[WKALI] WebKit data cleared successfully. Will re-launch browser.\n");
+            simulate_on_clear_success();
+            resp = MHD_create_response_from_buffer(2, (void *)"OK",
+                                                   MHD_RESPMEM_PERSISTENT);
+            MHD_add_response_header(resp, "Content-Type", "text/plain");
+            http_status = MHD_HTTP_OK;
+            atomic_store(&webkit_data_cleared, 1);
+        } else {
+            wkali_log("[WKALI] WebKit data clear failed.\n");
+            const char *fail = "Clear failed";
+            resp = MHD_create_response_from_buffer(strlen(fail), (void *)fail,
+                                                   MHD_RESPMEM_PERSISTENT);
+            MHD_add_response_header(resp, "Content-Type", "text/plain");
+            http_status = MHD_HTTP_INTERNAL_SERVER_ERROR;
         }
     } else {
         const FileEntry *entry = registry_lookup(url);
@@ -172,13 +215,17 @@ enum MHD_Result http_on_request(void *cls, struct MHD_Connection *conn,
             if (strcmp(url, ROUTE_CACHE_MANIFEST) == 0 && (fw > 0.0f || strcmp(WKALI_FORCE_EXPLOIT, "auto") != 0)) {
                 if (strcmp(WKALI_FORCE_EXPLOIT, "umtx2") == 0) {
                     wkali_log("[WKALI] FORCE_EXPLOIT is set, caching umtx2 exploit\n");
-                } else if (strcmp(WKALI_FORCE_EXPLOIT, "slopkit") == 0) {
-                    wkali_log("[WKALI] FORCE_EXPLOIT is set, caching slopkit exploit\n");
+                } else if (strcmp(WKALI_FORCE_EXPLOIT, "poops") == 0) {
+                    wkali_log("[WKALI] FORCE_EXPLOIT is set, caching poops exploit\n");
+                } else if (strcmp(WKALI_FORCE_EXPLOIT, "p2jb") == 0) {
+                    wkali_log("[WKALI] FORCE_EXPLOIT is set, caching p2jb exploit\n");
                 } else {
                     if (fw <= 5.50f) {
                         wkali_log("[WKALI] Detected firmware %.2f <= 5.50, caching umtx2 exploit\n", fw);
+                    } else if (fw <= 12.00f) {
+                        wkali_log("[WKALI] Detected firmware %.2f <= 12.00, caching poops exploit\n", fw);
                     } else {
-                        wkali_log("[WKALI] Detected firmware %.2f > 5.50, caching slopkit exploit\n", fw);
+                        wkali_log("[WKALI] Detected firmware %.2f > 12.00, caching p2jb exploit\n", fw);
                     }
                 }
 
@@ -200,7 +247,8 @@ enum MHD_Result http_on_request(void *cls, struct MHD_Connection *conn,
                         int keep = 1;
                         if (strcmp(WKALI_FORCE_EXPLOIT, "umtx2") == 0) {
                             if (strstr(line, "/slopkit/")) keep = 0;
-                        } else if (strcmp(WKALI_FORCE_EXPLOIT, "slopkit") == 0) {
+                        } else if (strcmp(WKALI_FORCE_EXPLOIT, "poops") == 0
+                            || strcmp(WKALI_FORCE_EXPLOIT, "p2jb") == 0) {
                             if (strstr(line, "/umtx2/")) keep = 0;
                         } else {
                             if (fw <= 5.50f && strstr(line, "/slopkit/")) keep = 0;
@@ -222,6 +270,9 @@ enum MHD_Result http_on_request(void *cls, struct MHD_Connection *conn,
                     mem_mode = MHD_RESPMEM_MUST_FREE;
                 }
             }
+
+            /* Test simulation hook (no-op unless compiled with SIMULATE=1|2) */
+            simulate_corrupt_manifest(url, &payload, &payload_size, &mem_mode);
 
             resp = MHD_create_response_from_buffer(payload_size, payload,
                                                    mem_mode);
