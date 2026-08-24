@@ -1,8 +1,8 @@
 name: Build Check
 
-# Compiles both installer variants without publishing anything, so changes can
-# be validated against the real PS5 SDK toolchain before a release is cut.
-# Uploads the ELFs as short-lived artifacts for inspection.
+# Compiles the installer without publishing anything, so changes can be
+# validated against the real PS5 SDK toolchain before a release is cut.
+# Uploads the ELF as a short-lived artifact for inspection.
 
 on:
   workflow_dispatch:
@@ -12,18 +12,12 @@ on:
         type: string
         required: false
         default: main
-      local_host:
-        description: 'host:port baked into the Jailbreak (Local) shortcut'
-        type: string
-        required: false
-        default: '192.168.1.139:6969'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       BUILD_TYPE: dev
-      LOCAL_HOST: ${{ inputs.local_host }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,7 +26,7 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
-      - name: Build both installer variants
+      - name: Build the installer
         run: |
           chmod +x build_release.sh
           ./build_release.sh
@@ -41,38 +35,43 @@ jobs:
         run: |
           echo "--- artifacts ---"
           ls -la webkit-autoloader-x-installer_v*.elf \
-                 webkit-autoloader-x-local-installer_v*.elf \
                  webkit-autoloader-x-host_v*.py
 
           echo "--- generated app metadata ---"
-          echo "normal:"; cat assets/param.json
-          echo "local:";  cat assets/param_local.json
+          cat assets/param.json
 
-      - name: Verify the two variants install different apps
+      - name: Verify this app can coexist with upstream's
         run: |
           python3 - <<'PY'
-          import json, sys
+          import json, re, sys
           a = json.load(open('assets/param.json'))
-          b = json.load(open('assets/param_local.json'))
-          print('normal:', a['titleId'], a['deeplinkUri'])
-          print('local :', b['titleId'], b['deeplinkUri'])
+          print('titleId :', a['titleId'])
+          print('deeplink:', a['deeplinkUri'])
+
+          m = re.search(r':(\d+)/', a['deeplinkUri'])
+          port = m.group(1) if m else None
+
+          # The served port must match the deeplink, or the homescreen app opens
+          # a URL that was never cached.
+          hdr = open('include/wkali.h').read()
+          wkali_port = re.search(r'#define\s+WKALI_PORT\s+(\d+)', hdr).group(1)
+
           fail = []
-          if a['titleId'] == b['titleId']:
-              fail.append('title IDs collide — the two apps would overwrite each other')
-          if a['titleId'] == 'WKAL00001' or b['titleId'] == 'WKAL00001':
+          if a['titleId'] == 'WKAL00001':
               fail.append("title ID collides with upstream PLK's WKAL00001")
-          if '18181' in a['deeplinkUri']:
-              fail.append("deeplink still on upstream's port 18181 — AppCache would be shared")
+          if port == '18181':
+              fail.append("deeplink on upstream's port 18181 - AppCache would be shared")
+          if port != wkali_port:
+              fail.append('deeplink port %s != WKALI_PORT %s - app would open an uncached URL' % (port, wkali_port))
           if fail:
               sys.exit('FAIL: ' + '; '.join(fail))
-          print('OK: distinct title IDs, and the cached variant is off upstream\'s port')
+          print('OK: title ID distinct from upstream; port %s matches WKALI_PORT and is off 18181' % port)
           PY
 
-      - name: Upload built ELFs
+      - name: Upload built ELF
         uses: actions/upload-artifact@v4
         with:
           name: build-check
           path: |
             webkit-autoloader-x-installer_v*.elf
-            webkit-autoloader-x-local-installer_v*.elf
           retention-days: 3

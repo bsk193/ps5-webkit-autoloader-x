@@ -1,5 +1,5 @@
 /*
- * PS5 Homescreen App Installer, shared by both installer variants.
+ * PS5 Homescreen App Installer for the WebKit Autoloader X Installer.
  * Based on the original implementation in ftpsrv by John Törnblom
  * and Payload Manager by PLK.
  */
@@ -28,13 +28,7 @@
   extern const uint8_t name[];                                                 \
   extern const size_t name##_size;
 
-/* The two variants install different apps, so they embed different metadata.
- * The icon is shared — only the title ID, label and deeplink differ. */
-#ifdef WKAL_VARIANT_LOCAL
-INCASSET(param_json, "assets/param_local.json");
-#else
 INCASSET(param_json, "assets/param.json");
-#endif
 INCASSET(icon0_png, "assets/icon0.png");
 
 int sceAppInstUtilInitialize(void);
