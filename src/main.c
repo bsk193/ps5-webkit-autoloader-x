@@ -75,7 +75,9 @@ extern int sceUserServiceGetForegroundUser(int *);
 __attribute__((used)) volatile const char wkali_version_sig[] =
     "WKALI_VER:" WKAL_FULL_VERSION;
 
-/* Fork marker, separate from upstream's: our semver + the PLK base. */
+/* Fork marker, separate from upstream's: our semver + the PLK base.
+ * main() reads it once so --gc-sections cannot drop it (`used` alone only
+ * stops the compiler, not the linker). */
 __attribute__((used)) volatile const char wkali_x_version_sig[] =
     "WKALI_X_VER:" WKAL_X_VERSION " WKALI_X_BASE:" WKAL_X_VERSION_UPSTREAM;
 
@@ -84,6 +86,7 @@ int main(void) {
     pid_t pid;
 
     syscall(SYS_thr_set_name, -1, WKALI_THREAD_NAME);
+    (void)wkali_x_version_sig[0];
 
     /* Kill previous installer instances */
     while ((pid = find_pid(WKALI_THREAD_NAME)) > 0) {
