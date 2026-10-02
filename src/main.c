@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include "wkali.h"
+#include "version_x.h"
 #include "http_server.h"
 #include "ps5_launcher.h"
 
@@ -74,6 +75,10 @@ extern int sceUserServiceGetForegroundUser(int *);
 __attribute__((used)) volatile const char wkali_version_sig[] =
     "WKALI_VER:" WKAL_FULL_VERSION;
 
+/* Fork marker, separate from upstream's: our semver + the PLK base. */
+__attribute__((used)) volatile const char wkali_x_version_sig[] =
+    "WKALI_X_VER:" WKAL_X_VERSION " WKALI_X_BASE:" WKAL_X_VERSION_UPSTREAM;
+
 int main(void) {
     struct MHD_Daemon *daemon;
     pid_t pid;
@@ -89,8 +94,9 @@ int main(void) {
         sleep(1);
     }
 
-    wkali_log("[WKALI] WebKit Autoloader X Installer v%s (built %s) starting on port %d...\n",
-                   WKAL_FULL_VERSION, WKAL_BUILD_TIME, WKALI_PORT);
+    wkali_log("[WKALI] WebKit Autoloader X Installer v%s, based on WebKit Autoloader v%s "
+              "(built %s) starting on port %d...\n",
+              WKAL_X_VERSION, WKAL_X_VERSION_UPSTREAM, WKAL_BUILD_TIME, WKALI_PORT);
 
     /* Initialize PS5 System Services */
     int err;
@@ -173,7 +179,8 @@ int main(void) {
     }
 
     if (atomic_load(&install_completed)) {
-        wkali_notify("WebKit Autoloader X v%s cached successfully!", WKAL_FULL_VERSION);
+        wkali_notify("WebKit Autoloader X v%s cached successfully!\nBased on WebKit Autoloader v%s",
+                     WKAL_X_VERSION, WKAL_X_VERSION_UPSTREAM);
     }
     wkali_log_wakeup();
 

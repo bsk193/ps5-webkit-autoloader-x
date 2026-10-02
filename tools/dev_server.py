@@ -34,10 +34,10 @@ def get_version_info():
 
         return _gvi()
     except Exception:
-        return {"full": "dev", "build_time": "dev"}
+        return {"full": "dev", "build_time": "dev", "upstream": "dev"}
 
 
-def make_handler(base_dir, version, build_time):
+def make_handler(base_dir, version, build_time, upstream=b"dev"):
     if isinstance(version, str):
         version = version.encode("utf-8")
     if isinstance(build_time, str):
@@ -86,6 +86,7 @@ def make_handler(base_dir, version, build_time):
             # so the dev page mirrors a real build.
             if rel.endswith((".html", ".htm")) or rel == "index.html":
                 data = data.replace(VERSION_TOKEN, version).replace(BUILD_TIME_TOKEN, build_time)
+                data = data.replace(b"[[UPSTREAM_VERSION_PLACEHOLDER]]", upstream)
             if rel == "app.js":
                 # Build-time exploit override (auto | umtx2 | poops | relapse),
                 # from the FORCE_EXPLOIT env — same token as the ELF/host builds.
@@ -154,7 +155,8 @@ def main():
 
     port = find_free_port(args.port)
     info = get_version_info()
-    handler = make_handler(base_dir, info["full"].encode("utf-8"), info["build_time"].encode("utf-8"))
+    handler = make_handler(base_dir, info["full"].encode("utf-8"), info["build_time"].encode("utf-8"),
+                           info.get("upstream", "dev").encode("utf-8"))
     httpd = ThreadingHTTPServer(("127.0.0.1", port), handler)
     url = f"http://localhost:{port}/app/index.html"
 

@@ -19,7 +19,7 @@ import sys
 import tempfile
 import zipfile
 
-from gen_version import get_version_info
+from gen_version import UPSTREAM_VERSION_PLACEHOLDER, get_version_info, read_upstream_version
 
 CHUNK = 76
 MARKER = "# [[EMBEDDED_ZIP]]"
@@ -28,6 +28,8 @@ VERSION_MARKER = "# [[VERSION_PLACEHOLDER]]"
 VERSION_PLACEHOLDER = VERSION_MARKER + '\nVERSION = "dev"'
 BUILD_TIME_MARKER = "# [[BUILD_TIME_PLACEHOLDER]]"
 BUILD_TIME_PLACEHOLDER = BUILD_TIME_MARKER + '\nBUILD_TIME = "dev"'
+UPSTREAM_MARKER = "# [[UPSTREAM_VERSION_PLACEHOLDER]]"
+UPSTREAM_PLACEHOLDER = UPSTREAM_MARKER + '\nUPSTREAM_VERSION = "dev"'
 CERT_MARKER = "# [[SSL_CERT_PLACEHOLDER]]"
 CERT_PLACEHOLDER = CERT_MARKER + '\nSSL_CERT_PEM = ""'
 KEY_MARKER = "# [[SSL_KEY_PLACEHOLDER]]"
@@ -113,6 +115,8 @@ def build_zip(frontend_dir, overrides_dir, version, build_time, payload_path=Non
                     data = f.read()
                 data = data.replace(VERSION_TOKEN, version.encode("utf-8"))
                 data = data.replace(BUILD_TIME_TOKEN, build_time.encode("utf-8"))
+                data = data.replace(UPSTREAM_VERSION_PLACEHOLDER,
+                                    read_upstream_version().encode("utf-8"))
                 zf.writestr(rel, data)
             elif rel == "app.js":
                 # Build-time exploit override (auto | umtx2 | poops | relapse),
@@ -146,6 +150,8 @@ def embed_version(source, version, build_time):
             "Rebuild pc-host/host.py first.".format(BUILD_TIME_MARKER)
         )
     source = source.replace(VERSION_PLACEHOLDER, VERSION_MARKER + f'\nVERSION = "{version}"')
+    source = source.replace(UPSTREAM_PLACEHOLDER,
+                            UPSTREAM_MARKER + f'\nUPSTREAM_VERSION = "{read_upstream_version()}"')
     return source.replace(BUILD_TIME_PLACEHOLDER, BUILD_TIME_MARKER + f'\nBUILD_TIME = "{build_time}"')
 
 
@@ -259,7 +265,7 @@ def main(argv=None):
 
     print(f"Embedded {len(file_map)} files (merged from {frontend_dir} and {overrides_dir})")
     print(f"  raw files:  {raw_size} bytes -> zip: {len(zip_data)} bytes -> base64: {len(payload_b64)} bytes")
-    print(f"  version:    v{version} by PLK (built {build_time})")
+    print(f"  version:    v{version}, based on WebKit Autoloader v{read_upstream_version()} (built {build_time})")
     print(f"Wrote {output_path} ({len(built)} bytes)")
     return 0
 

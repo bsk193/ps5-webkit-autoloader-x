@@ -56,6 +56,18 @@ WKAL_HOST_SOURCES := pc-host/host.py $(FRONTEND_FILES)
 CFLAGS  := -Os -Wall -ffunction-sections -fdata-sections $(INCLUDES)
 LDFLAGS := -Wl,--gc-sections
 
+# Fork version (wkx-v* tags, see FORK.md / tools/fork_version.sh). CI passes
+# X_VERSION explicitly; local builds fall back to `git describe`. Shown by the
+# installer as WKAL_X_VERSION (include/version_x.h).
+# (Not `?=`: build_release.sh passes X_VERSION into Docker even when empty.)
+ifeq ($(strip $(X_VERSION)),)
+X_VERSION := $(shell bash tools/fork_version.sh dev 2>/dev/null)
+endif
+ifneq ($(X_VERSION),)
+X_VERSION_CFLAGS := -DWKAL_X_VERSION=\"$(X_VERSION)\"
+endif
+CFLAGS += $(X_VERSION_CFLAGS)
+
 # Test builds that simulate a corrupted WebKit AppCache (see tools/build_cache_corruption_test_elfs.sh):
 #   SIMULATE=0 (default) - production behavior, corruption detection only
 #   SIMULATE=1 - every cache download fails until /clear-webkit-data succeeds

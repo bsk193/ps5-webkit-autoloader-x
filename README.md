@@ -48,7 +48,7 @@ There are two ways to set up the autoloader, depending on whether you're already
 
 ### Already jailbroken? Just load the installer ELF
 
-1. Download `webkit-autoloader-x-installer_vX.Y.Zx.elf` from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) page.
+1. Download `webkit-autoloader-x-installer_vX.Y.Z_ps5.elf` from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) page.
 2. Send it to your PS5 with `elfldr`, or launch it from a payload manager.
 3. The installer opens the browser once to cache the autoloader page, then creates the **Jailbreak** app on the homescreen and exits.
 4. **Reboot once**, then launch **Jailbreak** from the homescreen.
@@ -57,7 +57,7 @@ There are two ways to set up the autoloader, depending on whether you're already
 
 If you aren't jailbroken yet, you'll need to host the exploit locally on your PC for the initial setup:
 
-1. Download `webkit-autoloader-x-host_vX.Y.Z.Nx.py` (or the `.exe`) from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) and run it on a PC on your network.
+1. Download `webkit-autoloader-x-host_vX.Y.Z_pc.py` (or the `_windows.exe`) from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) and run it on a PC on your network.
 2. On your PS5, set your network's DNS server to your PC's IP address.
 3. Open the **User's Guide** from Settings to run the installer, which adds the **Jailbreak** app to your homescreen.
 4. Launch **Jailbreak** from the homescreen.

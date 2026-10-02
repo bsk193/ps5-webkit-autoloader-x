@@ -52,13 +52,13 @@ or `@sync`.
 
 ## Two setup flows
 
-**Installer ELF (already jailbroken).** Send `webkit-autoloader-x-installer_v*.elf` to the console
+**Installer ELF (already jailbroken).** Send `webkit-autoloader-x-installer_v*_ps5.elf` to the console
 (elfldr or a payload manager). It opens the browser once to cache the frontend via AppCache,
 creates the `WKLX00001` app only after that cache succeeds, then exits. From then on the app
 runs the chain offline from the cache. On FW 7.00–12.00, it prompts the user to pick Poops or
 Relapse before starting the cache.
 
-**PC host (not jailbroken).** Run `webkit-autoloader-x-host_v*.py` / `.exe` on a PC, point the
+**PC host (not jailbroken).** Run `webkit-autoloader-x-host_v*_pc.py` / `_windows.exe` on a PC, point the
 console's DNS at it, and open the User's Guide. The host spoofs `manuals.playstation.net`
 (DNS + self-signed HTTPS) and serves the same frontend, but autoloads the **installer ELF**
 instead of the unified-autoloader-x — so this flow installs the homescreen app.
@@ -249,8 +249,10 @@ submodule must be checked out at a commit that carries a release tag in
 
 ## Versioning
 
-The base version lives in `include/wkali.h` (`WKAL_VERSION`). `tools/gen_version.py` produces
-the full version — `<base>` for stable (`BUILD_TYPE=stable`) or `<base>-dev-<suffix>` for dev —
+The fork's own semver comes from `wkx-v*` git tags (`X_VERSION` in CI, else `git describe`);
+upstream's `WKAL_VERSION` in `include/wkali.h` is only read, for "based on vX". See
+[FORK.md](FORK.md#versioning). `tools/gen_version.py` produces the full version — `1.2.3` for a
+release, `1.2.3-4-gabc1234` for dev, plus `-dirty.<timestamp>` for local uncommitted builds —
 and regenerates `include/wkali_version.h`, `assets/param.json` and the version placeholders in
 the pages. The full version also names the staged app directory (`/app/<version>/`), the
 pointer page's redirect/marker targets and the `__complete__` content, so the whole cache

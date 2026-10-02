@@ -1,7 +1,15 @@
 #!/bin/bash
 # WebKit Autoloader X Installer - Versioned Release Build Script
+#
+# Version: X_VERSION from the environment (CI passes the release version or
+# `tools/fork_version.sh dev`), else gen_version.py's `git describe` on the
+# wkx-v* tags. ARTIFACT_SUFFIX (e.g. "-abc1234" for dev builds) is appended to
+# the artifact names only:
+#
+#   webkit-autoloader-x-installer_v<version>[-<sha>]_ps5.elf
+#   webkit-autoloader-x-host_v<version>[-<sha>]_pc.py
 
-# 1. Compute full version (stable = base, dev = base + build type + git hash/timestamp)
+# 1. Compute full version
 VERSION=$(python3 tools/gen_version.py --print)
 
 if [ -z "$VERSION" ]; then
@@ -9,11 +17,12 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
-OUTPUT_ELF="webkit-autoloader-x-installer_v${VERSION}.elf"
-HOST_PY="webkit-autoloader-x-host_v${VERSION}.py"
+SUFFIX="${ARTIFACT_SUFFIX:-}"
+OUTPUT_ELF="webkit-autoloader-x-installer_v${VERSION}${SUFFIX}_ps5.elf"
+HOST_PY="webkit-autoloader-x-host_v${VERSION}${SUFFIX}_pc.py"
 IMAGE_NAME="ps5-webkit-autoloader-sdk"
 
-echo "--- Building WebKit Autoloader X Installer v$VERSION ---"
+echo "--- Building WebKit Autoloader X Installer v$VERSION (based on WebKit Autoloader v$(bash tools/fork_version.sh upstream)) ---"
 
 # 2. Remove old versioned artifacts
 rm -f webkit-autoloader-x-installer_v*.elf webkit-autoloader-x-host_v*.py
@@ -31,11 +40,11 @@ if [[ "$(docker images -q $IMAGE_NAME 2> /dev/null)" == "" ]]; then
 fi
 
 # 4. Build native ELF via Docker (generates icon assets + file registry as deps)
-#    Note: docker does NOT inherit the host environment, so BUILD_TYPE,
+#    Note: docker does NOT inherit the host environment, so X_VERSION,
 #    FORCE_EXPLOIT and CUSTOM_VERSION must be passed explicitly or defaults
-#    ("dev"/"auto"/empty) apply.
+#    (git describe/"auto"/empty) apply.
 echo "[1/2] Building native ELF via Docker..."
-docker run --rm -u "$(id -u):$(id -g)" -e "BUILD_TYPE=${BUILD_TYPE:-dev}" -e "FORCE_EXPLOIT=${FORCE_EXPLOIT:-auto}" -e "CUSTOM_VERSION=${CUSTOM_VERSION:-}" -v "$(pwd)":/src -w /src $IMAGE_NAME make clean all
+docker run --rm -u "$(id -u):$(id -g)" -e "X_VERSION=${X_VERSION:-}" -e "FORCE_EXPLOIT=${FORCE_EXPLOIT:-auto}" -e "CUSTOM_VERSION=${CUSTOM_VERSION:-}" -v "$(pwd)":/src -w /src $IMAGE_NAME make clean all
 
 if [ $? -ne 0 ]; then
     echo "      !!! ELF build FAILED!"

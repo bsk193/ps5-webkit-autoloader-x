@@ -46,6 +46,7 @@ webkit-autoloader-host.py
 webkit-autoloader-x-host_v*.py
 webkit-autoloader-host.exe
 webkit-autoloader-x-host_v*.exe
+webkit-autoloader-x-installer_v*.elf
 webkit-autoloader-host.spec
 build/
 dist/

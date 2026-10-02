@@ -56,6 +56,9 @@ VERSION = "dev"
 # [[BUILD_TIME_PLACEHOLDER]]
 BUILD_TIME = "dev"
 
+# [[UPSTREAM_VERSION_PLACEHOLDER]]
+UPSTREAM_VERSION = "dev"
+
 # ANSI colors (enabled only when output is a real terminal)
 def _init_console():
     """Enable ANSI/VT processing on Windows consoles; returns True when
@@ -98,9 +101,10 @@ def build_banner():
         [
             "",
             "   ┌" + "─" * width + "┐",
-            row("PS5-WEBKIT-AUTOLOADER"),
+            row("PS5-WEBKIT-AUTOLOADER-X"),
             row(f"INSTALLER-HOST v{VERSION}"),
-            row(f"by PLK (built {BUILD_TIME})"),
+            row(f"based on WebKit Autoloader v{UPSTREAM_VERSION} by PLK"),
+            row(f"(built {BUILD_TIME})"),
             "   └" + "─" * width + "┘",
         ]
     )
@@ -145,9 +149,13 @@ class UpdateChecker:
     screen. All failures are silent — the notice is best-effort only.
     """
 
-    API_URL = "https://api.github.com/repos/itsPLK/ps5-webkit-autoloader/releases/latest"
-    RELEASES_URL = "https://github.com/itsPLK/ps5-webkit-autoloader/releases"
-    USER_AGENT = "ps5-webkit-autoloader-host"
+    # This fork's releases (wkx-v* tags; /latest skips pre-releases), not PLK's:
+    # the two version lines are unrelated, so comparing against upstream would
+    # announce the wrong "update".
+    API_URL = "https://api.github.com/repos/bsk193/ps5-webkit-autoloader-x/releases/latest"
+    RELEASES_URL = "https://github.com/bsk193/ps5-webkit-autoloader-x/releases"
+    USER_AGENT = "ps5-webkit-autoloader-x-host"
+    TAG_PREFIX = "wkx-v"
     TIMEOUT = 3
 
     def __init__(self, version):
@@ -183,7 +191,8 @@ class UpdateChecker:
                 if resp.status != 200:
                     return
                 tag = json.load(resp).get("tag_name", "")
-            self.latest = self._base_version(tag.lstrip("v"))
+            if tag.startswith(self.TAG_PREFIX):
+                self.latest = self._base_version(tag[len(self.TAG_PREFIX):])
         except Exception:
             pass
         finally:

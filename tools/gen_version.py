@@ -1,27 +1,29 @@
 #!/usr/bin/env python3
 """Compute the build version and generate include/wkali_version.h + assets/param.json.
 
-Version scheme (mirrors the ps5-bdjb-autoloader project):
+Fork versioning (see FORK.md): the version shown everywhere and used as the
+AppCache key is the fork's own semver, set by wkx-v* git tags:
 
-    dev:          <base>-<build_type>-<suffix>
-    stable:       <base>
-    pre-release:  <base>-pre-<suffix>
+    release:      1.2.3                    (tag wkx-v1.2.3, built by release.yml)
+    pre-release:  1.2.3-beta.1             (tag wkx-v1.2.3-beta.1)
+    dev:          1.2.3-4-gabc1234         (`git describe`, 0.0.0-dev with no tags)
+    dirty dev:    1.2.3-4-gabc1234-dirty.20261002123500   (local builds only)
 
-    e.g. 0.0.1-dev-abc1234           clean tree, dev build
-         0.0.1-dev-20260806123500    dirty tree — timestamp instead of hash
-         0.0.1-pre-abc1234           clean tree, pre-release build
-         0.0.1                       stable build — no hash/timestamp suffix
+X_VERSION in the environment sets the version explicitly (CI always passes
+it); otherwise tools/fork_version.sh dev computes it. The dirty suffix keeps
+local rebuilds of an uncommitted tree on fresh AppCache URLs; it is never added
+when X_VERSION is given.
 
-The base version comes from WKAL_VERSION in include/wkali.h. BUILD_TYPE is
-taken from the BUILD_TYPE environment variable (default: dev).
+The upstream PLK version (WKAL_VERSION in include/wkali.h) is only read, to
+show "based on WebKit Autoloader vX". It is never written.
 
-When CUSTOM_VERSION is set, it is appended to the base version and takes
-precedence over the build type (e.g. CUSTOM_VERSION=umtx2-test -> 0.0.1-umtx2-test).
-The custom suffix is also shown in the PS5 homescreen app title.
+When CUSTOM_VERSION is set, it is appended (e.g. CUSTOM_VERSION=umtx2-test ->
+1.2.3-umtx2-test) and also shown in the PS5 homescreen app title.
 
 Usage:
     gen_version.py                 # (re)generate version header and app metadata
     gen_version.py --print         # print the full version string
+    gen_version.py --print-x       # print the fork version (no dirty/custom suffix)
 """
 
 import datetime
@@ -33,14 +35,17 @@ import sys
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HEADER = os.path.join(REPO, "include", "wkali_version.h")
 WKALI_H = os.path.join(REPO, "include", "wkali.h")
+FORK_VERSION_SH = os.path.join(REPO, "tools", "fork_version.sh")
 PARAM_JSON = os.path.join(REPO, "assets", "param.json")
 PARAM_TEMPLATE = os.path.join(REPO, "assets", "param.json.template")
 VERSION_PLACEHOLDER = b"[[VERSION_PLACEHOLDER]]"
+# Replaced with upstream's WKAL_VERSION wherever the pages say "based on vX".
+UPSTREAM_VERSION_PLACEHOLDER = b"[[UPSTREAM_VERSION_PLACEHOLDER]]"
 PORT_PLACEHOLDER = b"[[PORT_PLACEHOLDER]]"
 
 
-def read_base_version():
-    """Read the base WKAL_VERSION from include/wkali.h."""
+def read_upstream_version():
+    """Read upstream's WKAL_VERSION from include/wkali.h (never edited here)."""
     try:
         with open(WKALI_H) as f:
             content = f.read()
@@ -78,33 +83,60 @@ def git(*args):
         return ""
 
 
-def get_version_info(build_type=None):
-    """Compute the version components. Returns a dict with 'full' being the
-    version string to display everywhere."""
-    if build_type is None:
-        build_type = os.environ.get("BUILD_TYPE", "dev")
-    if build_type not in ("dev", "stable", "pre-release"):
-        build_type = "dev"
+def read_tag_prefix():
+    """The release tag prefix, from PREFIX= in tools/fork_version.sh."""
+    with open(FORK_VERSION_SH) as f:
+        m = re.search(r"^PREFIX='([^']+)'", f.read(), re.M)
+    if not m:
+        sys.exit("Error: could not find PREFIX in tools/fork_version.sh")
+    return m.group(1)
 
-    base = read_base_version()
+
+def read_fork_version():
+    """The fork's own version: X_VERSION from the environment, else the same
+    `git describe` that `tools/fork_version.sh dev` runs (done here directly so
+    it also works where `bash` is not Git Bash, e.g. WSL's stub on Windows).
+    Returns (version, explicit)."""
+    explicit = os.environ.get("X_VERSION", "").strip()
+    if explicit:
+        return explicit, True
+    prefix = read_tag_prefix()
+    desc = git("describe", "--tags", "--match", prefix + "*")
+    if desc.startswith(prefix):
+        return desc[len(prefix):], False
+    return "0.0.0-dev", False
+
+
+def get_version_info():
+    """Compute the version components. Returns a dict with 'full' being the
+    version string used for the AppCache dir/key and the artifact names, and
+    'x' the fork version shown to the user."""
+    upstream = read_upstream_version()
+    x_version, explicit = read_fork_version()
     custom = os.environ.get("CUSTOM_VERSION", "").strip()
 
     git_hash = git("rev-parse", "--short", "HEAD")
     dirty = git("status", "--porcelain")
     suffix = git_hash or "unknown"
-    if dirty:
-        suffix = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
-    if custom:
-        full = f"{base}-{custom}"
-    elif build_type == "stable":
-        full = base
+    if explicit and "-" not in x_version:
+        build_type = "release"
+    elif explicit and re.search(r"-(alpha|beta|rc)\.\d+$", x_version):
+        build_type = "prerelease"
     else:
-        segment = "pre" if build_type == "pre-release" else "dev"
-        full = f"{base}-{segment}-{suffix}"
+        build_type = "dev"
+
+    full = x_version
+    if custom:
+        full = f"{full}-{custom}"
+    elif dirty and not explicit:
+        suffix = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        full = f"{full}-dirty.{suffix}"
 
     return {
-        "base": base,
+        "x": x_version,
+        "upstream": upstream,
+        "base": upstream,
         "build_type": build_type,
         "suffix": suffix,
         "full": full,
@@ -113,7 +145,7 @@ def get_version_info(build_type=None):
         "build_time": datetime.datetime.now(datetime.timezone.utc).strftime(
             "%Y-%m-%d %H:%M:%S UTC"
         ),
-        "title": full if custom else base,
+        "title": full if custom else x_version,
     }
 
 
@@ -122,7 +154,7 @@ def header_text(info):
         "#pragma once\n"
         "/* Auto-generated by tools/gen_version.py - do not edit. */\n"
         "\n"
-        f'#define WKAL_BASE_VERSION "{info["base"]}"\n'
+        f'#define WKAL_BASE_VERSION "{info["base"]}"  /* upstream PLK version */\n'
         f'#define WKAL_BUILD_TYPE "{info["build_type"]}"\n'
         f'#define WKAL_BUILD_SUFFIX "{info["suffix"]}"\n'
         f'#define WKAL_FULL_VERSION "{info["full"]}"\n'
@@ -147,6 +179,9 @@ def main(argv=None):
     argv = argv if argv is not None else sys.argv[1:]
     if argv and argv[0] == "--print":
         print(get_version_info()["full"])
+        return 0
+    if argv and argv[0] == "--print-x":
+        print(get_version_info()["x"])
         return 0
 
     info = get_version_info()

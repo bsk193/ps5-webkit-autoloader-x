@@ -16,7 +16,7 @@ import re
 import sys
 import zlib
 
-from gen_version import get_version_info
+from gen_version import UPSTREAM_VERSION_PLACEHOLDER, get_version_info, read_upstream_version
 
 CONTENT_TYPES = {
     ".html": "text/html; charset=utf-8",
@@ -109,6 +109,7 @@ def apply_version_placeholder(path, data, version, build_time, versioned_paths):
     if path in versioned_paths:
         data = data.replace(VERSION_PLACEHOLDER, version.encode("utf-8"))
         data = data.replace(BUILD_TIME_PLACEHOLDER, build_time.encode("utf-8"))
+        data = data.replace(UPSTREAM_VERSION_PLACEHOLDER, read_upstream_version().encode("utf-8"))
     return data
 
 

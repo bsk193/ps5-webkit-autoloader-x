@@ -1,150 +1,143 @@
-name: Release On-Demand
+name: Release
 
+# Releases are cut from tags (tools/release.ps1 creates and pushes them):
+#   git tag wkx-v1.1.0         && git push fork wkx-v1.1.0         -> release (marked Latest)
+#   git tag wkx-v1.1.1-beta.1  && git push fork wkx-v1.1.1-beta.1  -> pre-release (alpha/beta/rc)
+# Or: Actions -> Release -> Run workflow (on main), enter the version; the tag
+# is created on main's latest commit.
+# Releases are refused unless the commit is part of main.
+# The version is our own semver; the notes say which upstream WebKit Autoloader
+# release it is based on (WKAL_VERSION in include/wkali.h at that commit).
+#
+# Reminder: the bundled payload.elf is resolved from the pinned
+# third_party/ps5-unified-autoloader-x submodule's release, so cut that release
+# first (see FORK.md, "Release procedure").
 on:
+  push:
+    tags: ['wkx-v*']
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, e.g. 1.1.0 or 1.1.1-beta.1 (creates tag wkx-v<version>)'
+        required: true
+
+permissions:
+  contents: write
 
 jobs:
-  build-linux:
+  version:
     runs-on: ubuntu-latest
-    env:
-      BUILD_TYPE: stable
     outputs:
-      tag: ${{ steps.version.outputs.tag }}
-      version: ${{ steps.version.outputs.version }}
-      full_version: ${{ steps.version.outputs.full_version }}
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+      upstream: ${{ steps.v.outputs.upstream }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: recursive
-
-      - name: Extract Version
-        id: version
+      - id: v
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          VERSION=$(grep '#define WKAL_VERSION' include/wkali.h | awk '{print $3}' | tr -d '"' | tr -d '\r')
-          if [ -z "$VERSION" ]; then
-            echo "Error: Could not find WKAL_VERSION in include/wkali.h"
+          # Releases only from main: the tagged commit must be part of main.
+          git fetch -q origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Commit $GITHUB_SHA is not on main. Merge to main first, then tag a commit on main."
             exit 1
           fi
-          echo "Extracted version: $VERSION"
-          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "full_version=$(python3 tools/gen_version.py --print)" >> $GITHUB_OUTPUT
-
-      - name: Check if release exists
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG="${{ steps.version.outputs.tag }}"
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            TAG="$GITHUB_REF_NAME"
+          else
+            TAG="wkx-v${INPUT_VERSION#v}"
+            if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+              echo "::error::Tag $TAG already exists"; exit 1
+            fi
+          fi
+          if ! OUT=$(bash tools/fork_version.sh parse "$TAG"); then
+            echo "::error::Invalid release tag '$TAG'. Use wkx-v1.2.3 (release) or wkx-v1.2.3-beta.1 (pre-release: alpha/beta/rc)"
+            exit 1
+          fi
+          VER="${OUT% *}"
+          KIND="${OUT#* }"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists. Aborting."
-            exit 1
+            echo "::error::Release $TAG already exists"; exit 1
           fi
-          echo "Release $TAG does not exist. Proceeding."
+          UP=$(bash tools/fork_version.sh upstream)
+          echo "Releasing WebKit Autoloader X $VER ($KIND), based on WebKit Autoloader $UP"
+          {
+            echo "version=$VER"
+            echo "tag=$TAG"
+            echo "prerelease=$([ "$KIND" = prerelease ] && echo true || echo false)"
+            echo "upstream=$UP"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Build WebKit Autoloader Installer & Host Script
-        run: |
-          chmod +x build_release.sh
-          ./build_release.sh
+  build:
+    needs: version
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ needs.version.outputs.version }}
 
-      - name: Upload ELF, Script and Icon Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build
-          path: |
-            webkit-autoloader-x-installer_v*.elf
-            webkit-autoloader-x-host_v*.py
-            assets/icon.ico
-          retention-days: 1
-
-  build-windows:
-    needs: build-linux
-    runs-on: windows-latest
-    steps:
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install PyInstaller
-        run: pip install pyinstaller
-
-      - name: Download Linux Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-build
-          path: .
-
-      - name: Build Windows Executable
-        run: pyinstaller --onefile --noconfirm --icon assets/icon.ico --name webkit-autoloader-x-host_v${{ needs.build-linux.outputs.full_version }} "webkit-autoloader-x-host_v${{ needs.build-linux.outputs.full_version }}.py"
-
-      - name: Upload Windows Executable Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: dist/webkit-autoloader-x-host_v*.exe
-          retention-days: 1
-
-  create-release:
-    needs: [build-linux, build-windows]
+  release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    needs: [version, build]
     steps:
-      - name: Checkout repository (for git history)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Download Linux Artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: linux-build
-          path: .
-
-      - name: Download Windows Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-build
-          path: .
-
-      - name: Create Release
+          pattern: payload-*
+          merge-multiple: true
+          path: dist
+      - name: Create release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VER: ${{ needs.version.outputs.version }}
+          TAG: ${{ needs.version.outputs.tag }}
+          UP: ${{ needs.version.outputs.upstream }}
+          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          TAG="${{ needs.build-linux.outputs.tag }}"
-          FULL="${{ needs.build-linux.outputs.full_version }}"
-          REPO="${{ github.repository }}"
+          ELF="webkit-autoloader-x-installer_v${VER}_ps5.elf"
+          PY="webkit-autoloader-x-host_v${VER}_pc.py"
+          EXE="webkit-autoloader-x-host_v${VER}_windows.exe"
+          ls -l dist
+          for f in "$ELF" "$PY" "$EXE"; do
+            [ -f "dist/$f" ] || { echo "::error::missing artifact $f"; exit 1; }
+          done
 
-          ELF="webkit-autoloader-x-installer_v${FULL}.elf"
-          PY="webkit-autoloader-x-host_v${FULL}.py"
-          EXE="webkit-autoloader-x-host_v${FULL}.exe"
-          EXE_BASE="$(basename "${EXE}")"
-
-          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -n "$PREV_TAG" ]; then
-            CHANGELOG="**Full Changelog** (since [${PREV_TAG}](https://github.com/${REPO}/releases/tag/${PREV_TAG})): https://github.com/${REPO}/compare/${PREV_TAG}...${TAG}"
+          # Previous release tag for the compare link (pre-releases sort before their release).
+          PREV=$(git -c versionsort.suffix=- tag -l 'wkx-v*' --sort=-v:refname | grep -vx "$TAG" | head -1 || true)
+          {
+            echo "**WebKit Autoloader X $VER**, based on [WebKit Autoloader v$UP](https://github.com/itsPLK/ps5-webkit-autoloader/releases/tag/v$UP) by PLK."
+            echo
+            if [ "$PRERELEASE" = "true" ]; then
+              echo "> [!WARNING]"
+              echo "> Pre-release for testing. The latest stable release is unchanged."
+              echo
+            fi
+            echo "## Downloads"
+            echo
+            echo "| Platform | File |"
+            echo "|---|---|"
+            echo "| **PS5** (installer payload) | [${ELF}](https://github.com/${REPO}/releases/download/${TAG}/${ELF}) |"
+            echo "| **Linux / macOS / WSL** (installer-host) | [${PY}](https://github.com/${REPO}/releases/download/${TAG}/${PY}) |"
+            echo "| **Windows** (installer-host) | [${EXE}](https://github.com/${REPO}/releases/download/${TAG}/${EXE}) |"
+            echo
+            if [ -n "$PREV" ]; then
+              echo "Changes: https://github.com/${REPO}/compare/$PREV...$TAG"
+            fi
+          } > notes.md
+          if [ "$PRERELEASE" = "true" ]; then
+            FLAGS="--prerelease --latest=false"
           else
-            CHANGELOG="First Release."
+            FLAGS="--latest"
           fi
-
-          cat > release_body.md <<EOF
-          ## Downloads
-
-          | Platform | File |
-          |---|---|
-          | **PS5** (installer payload) | [${ELF}](https://github.com/${REPO}/releases/download/${TAG}/${ELF}) |
-          | **Linux / macOS / WSL** (installer-host) | [${PY}](https://github.com/${REPO}/releases/download/${TAG}/${PY}) |
-          | **Windows** (installer-host) | [${EXE_BASE}](https://github.com/${REPO}/releases/download/${TAG}/${EXE_BASE}) |
-
-          ---
-
-          ${CHANGELOG}
-          EOF
-
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --notes-file release_body.md \
-            "$ELF" "$PY" "$EXE"
+          gh release create "$TAG" "dist/$ELF" "dist/$PY" "dist/$EXE" \
+            --target "$GITHUB_SHA" \
+            --title "WebKit Autoloader X $VER" \
+            --notes-file notes.md \
+            $FLAGS
