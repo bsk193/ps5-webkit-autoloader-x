@@ -9,7 +9,7 @@
 # Payload Manager X as its no-autoload.txt fallback instead of the official
 # Payload Manager. It is otherwise upstream ps5-unified-autoloader.
 #
-# The shared elfldr is used by the slopkit chain (7.00-12.00); umtx2
+# The shared elfldr is used by the relapse chain (7.00-13.60); umtx2
 # (1.00-5.50) boots its own elfldr from the umtx2 submodule, like stock umtx2.
 # The unified-autoloader payload is the "bundled" ELF embedded in the installer:
 # after install, the homescreen app runs the exploit chain and autoloads it from
@@ -37,8 +37,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Shared elfldr (same ELF across all exploit chains)
 ELFLDR_SUBMODULE="$ROOT/third_party/ps5-elfldr"
 ELFLDR_REPO="itsPLK/ps5-elfldr"
-ELFLDR_TAG="v0.24-148b71c"
+ELFLDR_TAG="v0.26-bb1e117"
 ELFLDR_DEST="$ROOT/frontend/autoloader/shared/elfldr-ps5.elf"
+
+# Shared kexp (same binary across all exploit chains)
+KEXP_REPO="itsPLK/ps5-kexp"
+KEXP_TAG="v0.8-24cf6e5"
+KEXP_DEST="$ROOT/frontend/autoloader/shared/kexp-ps5.bin"
 
 # Bundled autoload payload (unified autoloader + embedded Payload Manager X)
 PAYLOAD_SUBMODULE="$ROOT/third_party/ps5-unified-autoloader-x"
@@ -114,13 +119,14 @@ except Exception as exc:
     print(f"Error: could not fetch release {tag} ({exc}).", file=sys.stderr)
     sys.exit(1)
 
+ext = os.path.splitext(dest)[1]
 asset = None
 for a in release.get("assets", []):
-    if a.get("name", "").endswith(".elf"):
+    if a.get("name", "").endswith(ext):
         asset = a
         break
 if asset is None:
-    print(f"Error: release {tag} has no .elf asset.", file=sys.stderr)
+    print(f"Error: release {tag} has no {ext} asset.", file=sys.stderr)
     sys.exit(1)
 
 digest = asset.get("digest", "")
@@ -176,4 +182,5 @@ fi
 PAYLOAD_TAG=$(git -C "$PAYLOAD_SUBMODULE" describe --tags --always)
 
 download_release "$ELFLDR_REPO" "$ELFLDR_TAG" "$ELFLDR_DEST"
+download_release "$KEXP_REPO" "$KEXP_TAG" "$KEXP_DEST"
 download_release "$PAYLOAD_REPO" "$PAYLOAD_TAG" "$PAYLOAD_DEST"
