@@ -40,10 +40,11 @@ delta is correspondingly small:
 | `include/wkali.h` | `WKALI_PORT` → `18282`; `WKAL_TITLE_ID` → `WKLX00001`; `WKAL_APP_LABEL` "Jailbreak" (`WKAL_VERSION` stays upstream's) |
 | `include/installer_config.h` | `INSTALLER_APP_NAME` → `WKAL_APP_LABEL` (remote-loader's installer notifications) |
 | `assets/param.json.template` | `titleId` → `WKLX00001`, `titleName` → "Jailbreak", deeplink port from `WKALI_PORT` |
-| `assets/icon.png`, `assets/icon.svg`, `tools/embed_icon_png.py`, `tools/gen_icons.py` | Jailbreak icon: broken chain + globe badge (raster master, 512x512). `embed_icon_png.py` wraps it into `icon.svg`; `gen_icons.py` uses it full-bleed (no padding) |
+| `assets/icon.png`, `assets/icon.svg`, `tools/embed_icon_png.py`, `tools/gen_icons.py` | Homescreen tile icon: broken chain + globe badge (raster master, 512x512; badge kept clear of the tile's rounded corner). `embed_icon_png.py` wraps it into `icon.svg`; `gen_icons.py` uses it full-bleed (no padding) |
 | `include/version_x.h`, `tools/fork_version.sh`, `tools/gen_version.py`, `tools/release.ps1` | Fork versioning (see below) |
 | `src/main.c`, `frontend/*`, `tools/gen_file_registry.py` | Branding and "X vN, based on vX" version display |
-| `frontend/autoloader/theme-x.{css,js}`, `<style id="theme-x">` in `frontend/installer-page/index.html` | Jailbreak theme (navy, chrome wordmark, blue glow), layered on upstream's styles via `PAGE_CSS`/`PAGE_JS` |
+| `frontend/autoloader/theme-x.{css,js}`, `<style id="theme-x">` in `frontend/installer-page/index.html` | Jailbreak shared UI (dark, flat, small radii, one accent), layered on upstream's styles via `PAGE_CSS`/`PAGE_JS`. The Y2JB fork draws the same UI with the same values |
+| `assets/jb-logo.png`, `tools/embed_ui_logo.py` | Plain Jailbreak icon shown inside the UI (no badge; the badge is only for telling the homescreen tiles apart). The script inlines it into the installer page and theme-x.css |
 | `build_release.sh`, `.gitignore`, `.github/workflows/` | Artifact names; `build.yml` (every push/PR) and tag-driven `release.yml` |
 | `README.md`, `ARCHITECTURE.md` | Fork notes |
 
