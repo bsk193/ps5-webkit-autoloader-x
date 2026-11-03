@@ -9,24 +9,30 @@ AppCache key is the fork's own semver, set by wkx-v* git tags:
     dev:          1.2.3-4-gabc1234         (`git describe`, 0.0.0-dev with no tags)
     dirty dev:    1.2.3-4-gabc1234-dirty.20261002123500   (local builds only)
 
-X_VERSION in the environment sets the version explicitly (CI always passes
-it); otherwise tools/fork_version.sh dev computes it. The dirty suffix keeps
-local rebuilds of an uncommitted tree on fresh AppCache URLs; it is never added
-when X_VERSION is given.
+X_VERSION in the environment sets the fork version explicitly (CI always
+passes it); otherwise `git describe` on the wkx-v* tags computes it, exactly
+like `tools/fork_version.sh dev`. The dirty suffix keeps local rebuilds of an
+uncommitted tree on fresh AppCache URLs; it is never added when X_VERSION is
+given. BUILD_VERSION (exported once by the Makefile / build_release.sh) pins
+the full version for the whole build.
 
 The upstream PLK version (WKAL_VERSION in include/wkali.h) is only read, to
 show "based on WebKit Autoloader vX". It is never written.
 
-When CUSTOM_VERSION is set, it is appended (e.g. CUSTOM_VERSION=umtx2-test ->
-1.2.3-umtx2-test) and also shown in the PS5 homescreen app title.
+When CUSTOM_VERSION is set, it is appended (e.g. CUSTOM_VERSION=cache-test ->
+1.2.3-cache-test) and also shown in the PS5 homescreen app title.
 
 Usage:
-    gen_version.py                 # (re)generate version header and app metadata
-    gen_version.py --print         # print the full version string
-    gen_version.py --print-x       # print the fork version (no dirty/custom suffix)
+    gen_version.py                     # (re)generate version header and app metadata
+    gen_version.py --print             # print the full version string
+    gen_version.py --print-x           # print the fork version (no dirty/custom suffix)
+    gen_version.py --build-time        # print the build time
+    gen_version.py --title             # print the page title
+    gen_version.py --page-config PATH  # emit standalone UI build information
 """
 
 import datetime
+import json
 import os
 import re
 import subprocess
@@ -39,9 +45,12 @@ FORK_VERSION_SH = os.path.join(REPO, "tools", "fork_version.sh")
 PARAM_JSON = os.path.join(REPO, "assets", "param.json")
 PARAM_TEMPLATE = os.path.join(REPO, "assets", "param.json.template")
 VERSION_PLACEHOLDER = b"[[VERSION_PLACEHOLDER]]"
+PORT_PLACEHOLDER = b"[[PORT_PLACEHOLDER]]"
 # Replaced with upstream's WKAL_VERSION wherever the pages say "based on vX".
 UPSTREAM_VERSION_PLACEHOLDER = b"[[UPSTREAM_VERSION_PLACEHOLDER]]"
-PORT_PLACEHOLDER = b"[[PORT_PLACEHOLDER]]"
+
+FORK_NAME = "WebKit Autoloader X"
+UPSTREAM_NAME = "WebKit Autoloader"
 
 
 def read_upstream_version():
@@ -139,7 +148,7 @@ def get_version_info():
         "base": upstream,
         "build_type": build_type,
         "suffix": suffix,
-        "full": full,
+        "full": os.environ.get("BUILD_VERSION") or full,
         "git_hash": git_hash or "unknown",
         "dirty": bool(dirty),
         "build_time": datetime.datetime.now(datetime.timezone.utc).strftime(
@@ -182,6 +191,25 @@ def main(argv=None):
         return 0
     if argv and argv[0] == "--print-x":
         print(get_version_info()["x"])
+        return 0
+    if argv and argv[0] == "--build-time":
+        print(get_version_info()["build_time"])
+        return 0
+    if argv and argv[0] == "--title":
+        info = get_version_info()
+        print(f"{FORK_NAME} v{info['full']}, based on {UPSTREAM_NAME} v{info['upstream']} "
+              f"by PLK (built {info['build_time']})")
+        return 0
+
+    if len(argv) == 2 and argv[0] == "--page-config":
+        info = get_version_info()
+        config = {
+            "version": info["full"],
+            "buildTime": info["build_time"],
+            "upstreamVersion": info["upstream"],
+        }
+        data = "window.WKAL_PAGE = " + json.dumps(config).replace("<", "\\u003c") + ";\n"
+        write_if_changed(os.path.abspath(argv[1]), data.encode("utf-8"))
         return 0
 
     info = get_version_info()

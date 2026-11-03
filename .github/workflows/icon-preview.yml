@@ -36,7 +36,7 @@ jobs:
           # The sizes that actually matter: PS5 tile, and small sizes where a
           # busy icon falls apart.
           for s in 256 128 64 32 16; do
-            rsvg-convert -w $s -h $s frontend/autoloader/favicon.svg \
+            rsvg-convert -w $s -h $s assets/icon.svg \
               -o "icon-preview/tile-${s}.png"
           done
           ls -la icon-preview

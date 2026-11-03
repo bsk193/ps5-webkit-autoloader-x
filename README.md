@@ -3,7 +3,7 @@
 </p>
 <h1 align="center">PS5 WebKit Autoloader X</h1>
 &nbsp;
-<p align="center">Automatically loads the WebKit exploit and your elf payloads.<br>Supports firmwares <b>1.00&ndash;5.50</b> and <b>7.00&ndash;13.60</b>.</p>
+<p align="center">Automatically loads the WebKit exploit and your elf payloads.<br>Supports firmwares <b>7.00&ndash;13.60</b>.</p>
 
 > [!IMPORTANT]
 > **This is a fork of [itsPLK/ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader).**
@@ -12,16 +12,9 @@
 > **every launch** rather than only as a fallback when no `autoload.txt` exists.
 >
 > The exploit chain, browser handling and app killing are unchanged upstream behaviour.
-> It installs as a **separate** homescreen app called **Jailbreak** (`WKLX00001`), so it coexists with the
-> official autoloader rather than replacing it.
-
-> [!NOTE]
-> Uses the [umtx2](https://github.com/idlesauce/umtx2) (FW 1.00–5.50), slopkit **Poops** (FW 7.00–12.00) and **Relapse** (FW 7.00–13.60) WebKit exploits under the hood with minimal changes (via patch files in `patches/`), so stability should match the originals.
-
-<p align="center">
-  <a href=".github/screenshots/webkit_autoloader.jpeg"><img src=".github/screenshots/webkit_autoloader.jpeg" width="260" alt="WebKit Autoloader - exploit running" /></a>
-  <a href=".github/screenshots/webkit_autoloader_installer.jpeg"><img src=".github/screenshots/webkit_autoloader_installer.jpeg" width="260" alt="Installer" /></a>
-</p>
+> It installs as a **separate** homescreen app called **Jailbreak** (`WKLX00001`, port 18282), so it
+> coexists with the official autoloader rather than replacing it. Versions are this fork's own
+> (`wkx-v*` tags); each release says which upstream version it is based on. See [FORK.md](FORK.md).
 
 <p align="center">
     <b>Other Autoloaders:</b><br>
@@ -30,14 +23,13 @@
     <a href="https://github.com/itsPLK/ps5-lua-autoloader">Lua</a>
 </p>
 
-## Why WebKit Autoloader X?
+## Why WebKit Autoloader?
 
 WebKit exploits are usually loaded by pointing your PS5's DNS at some server hosted by someone on the internet. That means you're putting your trust in whoever runs that server — and if it goes down, changes, or disappears, your setup breaks.
 
 This autoloader does it differently:
 
-- **Fully offline, no third-party DNS.** After a one-time install from your PC, everything is served straight from your PS5. There's nothing external to go down or change behind your back.  
-  Firmwares 12.02–13.60 run **Relapse**, which requires an active network interface (Wi-Fi or Ethernet connected to a local network; Internet access is not required).
+- **Fully offline, no third-party DNS.** After a one-time install from your PC, everything is served straight from your PS5. There's nothing external to go down or change behind your back.
 - **One-time setup, then a homescreen shortcut.** Once it's installed, you don't need a PC or the internet — just launch "Jailbreak" from the homescreen and you're done.
 - **Payloads loaded the way you already know.** After the exploit chain runs, your payloads are sent just like in [Y2JB](https://github.com/itsPLK/ps5-y2jb-autoloader) / [BD-JB](https://github.com/itsPLK/ps5-bdjb-autoloader) / [Lua](https://github.com/itsPLK/ps5-lua-autoloader) autoloaders — via **Payload Manager X**, or a custom `autoload.txt`.
 
@@ -50,7 +42,7 @@ There are two ways to set up the autoloader, depending on whether you're already
 
 1. Download `webkit-autoloader-x-installer_vX.Y.Z_ps5.elf` from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) page.
 2. Send it to your PS5 with `elfldr`, or launch it from a payload manager.
-3. The installer opens the browser once to cache the autoloader page, then creates the **Jailbreak** app on the homescreen and exits.
+3. The installer opens the browser to cache the autoloader page (choose Poops or Relapse if prompted), creates the **Jailbreak** app on the homescreen, and exits.
 4. **Reboot once**, then launch **Jailbreak** from the homescreen.
 
 ### Not jailbroken yet
@@ -60,21 +52,23 @@ If you aren't jailbroken yet, you'll need to host the exploit locally on your PC
 1. Download `webkit-autoloader-x-host_vX.Y.Z_pc.py` (or the `_windows.exe`) from the [Releases](https://github.com/bsk193/ps5-webkit-autoloader-x/releases) and run it on a PC on your network.
 2. On your PS5, set your network's DNS server to your PC's IP address.
 3. Open the **User's Guide** from Settings to run the installer, which adds the **Jailbreak** app to your homescreen.
-4. Launch **Jailbreak** from the homescreen.
+4. **Reboot once**, then launch **Jailbreak** from the homescreen.
 
 ## How to Use
 
 There are two ways to configure payloads:
 
-### 🟢 Option 1: Payload Manager X
+### 🟢 Option 1: Payload Manager
 
-**[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)** — a fully-featured PS5 payload manager with a web UI, served on **port 8084** — is launched **every time**, whether or not you have an `autoload.txt`. Browse to `http://<your-PS5-IP>:8084` to configure and send payloads, without needing to set up config files or transfer ELF files ahead of time.
+> **Fork:** this build always launches **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)**
+> (port 8084), also when an `autoload.txt` exists — its payloads run first. The upstream text below
+> describes the official Payload Manager behaviour.
 
-Just run **Jailbreak** from the homescreen; Payload Manager X comes up on its own.
+If no `autoload.txt` config is found, the autoloader will automatically launch **[Payload Manager](https://github.com/itsPLK/ps5-payload-manager)** — a fully-featured PS5 payload manager with a web UI. This lets you configure and send payloads directly from your browser, without needing to manually set up config files or transfer ELF files ahead of time.
 
-> This differs from upstream, where the manager is a *fallback* that only starts when no `autoload.txt` is found — meaning a leftover config would silently suppress it.
+Just run the autoloader — if there's nothing configured, Payload Manager starts automatically.
 
-> **Note:** Payload Manager X also has its own built-in autoload feature, which lets you configure payloads to load automatically on startup — all managed through its web UI. This is separate from the `autoload.txt` mechanism described below.
+> **Note:** Payload Manager also has its own built-in autoload feature, which lets you configure payloads to load automatically on startup — all managed through its web UI. This is separate from the `autoload.txt` mechanism described below.
 
 ---
 
@@ -91,7 +85,7 @@ For a fixed, automated payload chain, you can configure payloads manually:
   - Root of a USB drive
   - Internal drive: `/data/ps5_autoloader`
 
-> **Note:** Your `autoload.txt` payloads run first, then Payload Manager X starts about 2 seconds later. You do **not** need to add `pldmgrx` to `autoload.txt` — it is always launched.
+> **Note:** When an `autoload.txt` config is found, Payload Manager is **not** launched automatically. If you also want Payload Manager available, place `pldmgr.elf` in your `ps5_autoloader` directory and add it to `autoload.txt`.
 
 ## Additional Info
 
@@ -106,9 +100,9 @@ The latest installer payload will re-create the homescreen app and refresh the c
 <Details>
 <Summary><i>How to use a custom ELF Loader?</i></Summary>
 
-On firmwares 7.00–13.60 (Relapse / Poops), the autoloader uses a custom version of **elfldr** that only accepts connections from the PS5 itself (localhost). This improves security by preventing unauthorized devices on your network from sending payloads to your console. On firmwares 1.00–5.50 (umtx2), the stock elfldr is booted.
+The autoloader uses a custom version of **elfldr** that only accepts connections from the PS5 itself (localhost). This improves security by preventing unauthorized devices on your network from sending payloads to your console.
 
-If you want to use a "normal" ELF Loader that allows sending payloads from any device, you can simply load it through **Payload Manager X**.
+If you want to use a "normal" ELF Loader that allows sending payloads from any device, you can simply load it through **Payload Manager**.
 
 Alternatively, if you are using a manual config file (`autoload.txt`):
 1. Place your custom ELF Loader (e.g. `elfldr.elf`) in the `ps5_autoloader` directory.
@@ -130,18 +124,19 @@ etaHEN.elf
 
 ## For developers
 
-The technical internals and project architecture are documented in **[ARCHITECTURE.md](ARCHITECTURE.md)**.
+If you want to create or test your own WebKit payloads, check out [ps5-webkit-remote-loader](https://github.com/itsPLK/ps5-webkit-remote-loader), which this project is based on. It lets you send and run JavaScript payloads directly over the network on port 9027.
+
+Build both release artifacts with `./build_release.sh` (Docker required). The build
+uses remote-loader's standalone HTML and host builders directly. Run `make test` for
+the offline checks (payload, installer, and exploit-selection flow) and `make dev` for
+a local page preview. See [ARCHITECTURE.md](ARCHITECTURE.md) for the build and cache layout.
 
 ## Credits
 
-* **[itsPLK](https://github.com/itsPLK)** — [ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader), [ps5-unified-autoloader](https://github.com/itsPLK/ps5-unified-autoloader) and [ps5-payload-manager](https://github.com/itsPLK/ps5-payload-manager). This project is a fork of their work; all of the autoloader's design and implementation is theirs.
-* **[idlesauce](https://github.com/idlesauce)** & contributors — [umtx2](https://github.com/idlesauce/umtx2)
 * **[jordyidk](https://github.com/jordyidk)** & contributors — [slopkit (Poops)](https://github.com/jordyidk/slopkit)
-* **[soniciso1](https://github.com/soniciso1)** — [Relapse](https://github.com/soniciso1/relapse), bringing down Poops support to lower firmwares (7.00–8.60)
-* **[ntfargo](https://github.com/ntfargo)** & contributors — [Relapse](https://github.com/ntfargo/Relapse-Exploit)
-* **[ufm42](https://github.com/ufm42)** - [kexp](https://github.com/ufm42/kexp)
+* **[soniciso1](https://github.com/soniciso1)**, **[ntfargo](https://github.com/ntfargo)** & contributors — [Relapse](https://github.com/soniciso1/relapse)
 * **[john-tornblom](https://github.com/john-tornblom)** — [ps5-payload-sdk](https://github.com/ps5-payload-dev/sdk/) and [elfldr](https://github.com/ps5-payload-dev/elfldr)
-* **[madler](https://github.com/madler)** — [puff](https://github.com/madler/zlib/tree/master/contrib/puff)
+* See [ps5-webkit-remote-loader](https://github.com/itsPLK/ps5-webkit-remote-loader) for runtime and toolchain credits.
 * Everyone else contributing to the PS5 homebrew scene.
 
 
@@ -155,3 +150,13 @@ This project is licensed under the GPL-3.0 License.
 
 ## Donate
 - [donate to PLK](DONATE.md)
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=itsplk%2Fps5-webkit-autoloader&type=date&releases=&legend=bottom-right">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=itsplk/ps5-webkit-autoloader&type=date&theme=dark&legend=bottom-right" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=itsplk/ps5-webkit-autoloader&type=date&legend=bottom-right" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=itsplk/ps5-webkit-autoloader&type=date&legend=bottom-right" />
+ </picture>
+</a>

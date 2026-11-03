@@ -1,35 +1,6 @@
 #!/usr/bin/env bash
-# Download the shared ps5-elfldr ELF and the ps5-unified-autoloader-x payload
-# ELF from their GitHub releases, pinned to the third_party/ submodules.
-#
-#   third_party/ps5-elfldr               -> frontend/autoloader/shared/elfldr-ps5.elf
-#   third_party/ps5-unified-autoloader-x -> frontend/autoloader/payloads/payload.elf
-#
-# Fork note: the payload is bsk193/ps5-unified-autoloader-x, which embeds
-# Payload Manager X as its no-autoload.txt fallback instead of the official
-# Payload Manager. It is otherwise upstream ps5-unified-autoloader.
-#
-# The shared elfldr is used by the relapse chain (7.00-13.60); umtx2
-# (1.00-5.50) boots its own elfldr from the umtx2 submodule, like stock umtx2.
-# The unified-autoloader payload is the "bundled" ELF embedded in the installer:
-# after install, the homescreen app runs the exploit chain and autoloads it from
-# the local AppCache.
-#
-# Neither is rebuilt here — both ship as prebuilt release assets (same approach
-# as ps5-y2jb-autoloader's scripts/download_deps.sh), pinned to the submodule
-# commits so builds are reproducible: bump the submodule to bump the payload.
-#
-# The elfldr tag is pinned explicitly (not via git describe) because ps5-elfldr
-# tags multiple builds against one commit and describe picks an older tag; keep
-# ELFLDR_TAG in sync when bumping third_party/ps5-elfldr.
-#
-# Idempotent: skips assets that already exist and match their cached sha256.
-# The Makefile runs this automatically (payload-deps) before staging the
-# frontend and building the PC host.
-#
-# Uses only python3 (a build dependency already) — no curl required, so it
-# also runs inside the Docker SDK image.
-
+# Download pinned elfldr and unified-autoloader release assets for the HTML build.
+# Assets and verified digest sidecars are cached under build/deps/.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -37,18 +8,14 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Shared elfldr (same ELF across all exploit chains)
 ELFLDR_SUBMODULE="$ROOT/third_party/ps5-elfldr"
 ELFLDR_REPO="itsPLK/ps5-elfldr"
-ELFLDR_TAG="v0.26-bb1e117"
-ELFLDR_DEST="$ROOT/frontend/autoloader/shared/elfldr-ps5.elf"
+ELFLDR_DEST="$ROOT/build/deps/elfldr.elf"
 
-# Shared kexp (same binary across all exploit chains)
-KEXP_REPO="itsPLK/ps5-kexp"
-KEXP_TAG="v0.8-24cf6e5"
-KEXP_DEST="$ROOT/frontend/autoloader/shared/kexp-ps5.bin"
-
-# Bundled autoload payload (unified autoloader + embedded Payload Manager X)
+# Bundled autoload payload
+# Fork: the payload is bsk193/ps5-unified-autoloader-x, which always launches
+# the embedded Payload Manager X instead of the official Payload Manager.
 PAYLOAD_SUBMODULE="$ROOT/third_party/ps5-unified-autoloader-x"
 PAYLOAD_REPO="bsk193/ps5-unified-autoloader-x"
-PAYLOAD_DEST="$ROOT/frontend/autoloader/payloads/payload.elf"
+PAYLOAD_DEST="$ROOT/build/deps/autoload.elf"
 
 # Fetch the pinned release, verify the payload, and download it if needed.
 # Exit codes: 0 = asset ready, 3 = already present and verified.
@@ -169,18 +136,18 @@ PY
 
 if [ ! -e "$ELFLDR_SUBMODULE/.git" ]; then
     echo "Error: ps5-elfldr submodule is not initialised."
-    echo "Run: git submodule update --init --recursive"
+    echo "Run: git submodule update --init"
     exit 1
 fi
 
 if [ ! -e "$PAYLOAD_SUBMODULE/.git" ]; then
     echo "Error: ps5-unified-autoloader-x submodule is not initialised."
-    echo "Run: git submodule update --init --recursive"
+    echo "Run: git submodule update --init"
     exit 1
 fi
 
-PAYLOAD_TAG=$(git -C "$PAYLOAD_SUBMODULE" describe --tags --always)
+ELFLDR_TAG="${ELFLDR_TAG:-$(git -C "$ELFLDR_SUBMODULE" describe --tags --always 2>/dev/null || echo v0.27-b57d0e9)}"
+PAYLOAD_TAG="${PAYLOAD_TAG:-$(git -C "$PAYLOAD_SUBMODULE" describe --tags --always 2>/dev/null || echo v0.1.7.1x-unknown)}"
 
 download_release "$ELFLDR_REPO" "$ELFLDR_TAG" "$ELFLDR_DEST"
-download_release "$KEXP_REPO" "$KEXP_TAG" "$KEXP_DEST"
 download_release "$PAYLOAD_REPO" "$PAYLOAD_TAG" "$PAYLOAD_DEST"
