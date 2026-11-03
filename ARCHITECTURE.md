@@ -19,7 +19,7 @@ The exploit chains, caching design, installer and PC host are upstream's. Only t
 | Bundled payload | `itsPLK/ps5-unified-autoloader` | `bsk193/ps5-unified-autoloader-x` (always launches [Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x), port 8084) |
 | Homescreen app | `WKAL00001` / "WebKit Autoloader" | `WKLX00001` / "Jailbreak" |
 | Installer port / deeplink | 18181 | 18282 (`WKALI_PORT`; AppCache is keyed by origin) |
-| Version | `WKAL_VERSION` | own semver from `wkx-v*` tags; `WKAL_VERSION` only read for "based on vX" |
+| Version | `WKAL_VERSION` | own semver from `x-v*` tags; `WKAL_VERSION` only read for "based on vX" |
 
 Where upstream text below says 18181 or `WKAL00001`, this fork uses 18282 and `WKLX00001`.
 See [FORK.md](FORK.md).

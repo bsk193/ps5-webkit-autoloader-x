@@ -1,8 +1,8 @@
 name: Release
 
 # Releases are cut from tags (tools/release.ps1 creates and pushes them):
-#   git tag wkx-v1.1.0         && git push fork wkx-v1.1.0         -> release (marked Latest)
-#   git tag wkx-v1.1.1-beta.1  && git push fork wkx-v1.1.1-beta.1  -> pre-release (alpha/beta/rc)
+#   git tag x-v1.1.0         && git push fork x-v1.1.0         -> release (marked Latest)
+#   git tag x-v1.1.1-beta.1  && git push fork x-v1.1.1-beta.1  -> pre-release (alpha/beta/rc)
 # Or: Actions -> Release -> Run workflow (on main), enter the version; the tag
 # is created on main's latest commit.
 # Releases are refused unless the commit is part of main.
@@ -14,11 +14,11 @@ name: Release
 # first (see FORK.md, "Release procedure").
 on:
   push:
-    tags: ['wkx-v*']
+    tags: ['x-v*']
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release, e.g. 1.1.0 or 1.1.1-beta.1 (creates tag wkx-v<version>)'
+        description: 'Version to release, e.g. 1.1.0 or 1.1.1-beta.1 (creates tag x-v<version>)'
         required: true
 
 permissions:
@@ -50,13 +50,13 @@ jobs:
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
             TAG="$GITHUB_REF_NAME"
           else
-            TAG="wkx-v${INPUT_VERSION#v}"
+            TAG="x-v${INPUT_VERSION#v}"
             if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
               echo "::error::Tag $TAG already exists"; exit 1
             fi
           fi
           if ! OUT=$(bash tools/fork_version.sh parse "$TAG"); then
-            echo "::error::Invalid release tag '$TAG'. Use wkx-v1.2.3 (release) or wkx-v1.2.3-beta.1 (pre-release: alpha/beta/rc)"
+            echo "::error::Invalid release tag '$TAG'. Use x-v1.2.3 (release) or x-v1.2.3-beta.1 (pre-release: alpha/beta/rc)"
             exit 1
           fi
           VER="${OUT% *}"
@@ -110,7 +110,7 @@ jobs:
           done
 
           # Previous release tag for the compare link (pre-releases sort before their release).
-          PREV=$(git -c versionsort.suffix=- tag -l 'wkx-v*' --sort=-v:refname | grep -vx "$TAG" | head -1 || true)
+          PREV=$(git -c versionsort.suffix=- tag -l 'x-v*' --sort=-v:refname | grep -vx "$TAG" | head -1 || true)
           {
             echo "**WebKit Autoloader X $VER**, based on [WebKit Autoloader v$UP](https://github.com/itsPLK/ps5-webkit-autoloader/releases/tag/v$UP) by PLK."
             echo

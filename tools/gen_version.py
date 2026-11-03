@@ -2,15 +2,15 @@
 """Compute the build version and generate include/wkali_version.h + assets/param.json.
 
 Fork versioning (see FORK.md): the version shown everywhere and used as the
-AppCache key is the fork's own semver, set by wkx-v* git tags:
+AppCache key is the fork's own semver, set by x-v* git tags:
 
-    release:      1.2.3                    (tag wkx-v1.2.3, built by release.yml)
-    pre-release:  1.2.3-beta.1             (tag wkx-v1.2.3-beta.1)
+    release:      1.2.3                    (tag x-v1.2.3, built by release.yml)
+    pre-release:  1.2.3-beta.1             (tag x-v1.2.3-beta.1)
     dev:          1.2.3-4-gabc1234         (`git describe`, 0.0.0-dev with no tags)
     dirty dev:    1.2.3-4-gabc1234-dirty.20261002123500   (local builds only)
 
 X_VERSION in the environment sets the fork version explicitly (CI always
-passes it); otherwise `git describe` on the wkx-v* tags computes it, exactly
+passes it); otherwise `git describe` on the x-v* tags computes it, exactly
 like `tools/fork_version.sh dev`. The dirty suffix keeps local rebuilds of an
 uncommitted tree on fresh AppCache URLs; it is never added when X_VERSION is
 given. BUILD_VERSION (exported once by the Makefile / build_release.sh) pins

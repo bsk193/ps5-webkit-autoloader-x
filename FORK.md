@@ -84,14 +84,15 @@ that overwrites the official app instead, set **both** values back to `WKAL00001
 
 ## Versioning
 
-The fork has its **own semver**, set by git tags with the prefix **`wkx-v`** (distinct from
-upstream's `v*` tags, which are fetched into the same clone, and from the other `-x` forks'
-prefixes). It is the same scheme as [pkg-manager-x](https://github.com/bsk193/pkg-manager-x).
+The fork has its **own semver**, set by git tags with the prefix **`x-v`**, the same prefix as
+every bsk193 `-x` fork ([pkg-manager-x](https://github.com/bsk193/pkg-manager-x),
+payload-manager-x, ps5-y2jb-autoloader-x). It never collides with upstream's `v*` tags, which
+are fetched into the same clone.
 
 | Tag | Result |
 |---|---|
-| `wkx-v1.2.3` | Release, marked **Latest** on GitHub |
-| `wkx-v1.2.3-alpha.N` / `-beta.N` / `-rc.N` | Pre-release, not Latest. The dot before `N` is required so `beta.10` sorts after `beta.9` |
+| `x-v1.2.3` | Release, marked **Latest** on GitHub |
+| `x-v1.2.3-alpha.N` / `-beta.N` / `-rc.N` | Pre-release, not Latest. The dot before `N` is required so `beta.10` sorts after `beta.9` |
 
 Rules:
 
@@ -100,13 +101,13 @@ Rules:
    version line.
 2. **Releases come only from commits on `main`.** `release.yml` refuses anything else.
 3. **The build compiles the version in.** Release builds get the tag's version; other builds
-   use `git describe` (e.g. `1.0.0-4-g52ed3fe`), and `0.0.0-dev` with no `wkx-v*` tags at all.
+   use `git describe` (e.g. `1.0.0-4-g52ed3fe`), and `0.0.0-dev` with no `x-v*` tags at all.
 
 Where it lives:
 
 | File | Role |
 |---|---|
-| `tools/fork_version.sh` | `upstream` / `dev` / `parse <tag>`; holds the `wkx-v` prefix |
+| `tools/fork_version.sh` | `upstream` / `dev` / `parse <tag>`; holds the `x-v` prefix |
 | `include/version_x.h` | `WKAL_X_VERSION` (our semver, `-DWKAL_X_VERSION` from the Makefile) and `WKAL_X_VERSION_UPSTREAM` |
 | `tools/gen_version.py` | Full build version (`X_VERSION` env, else `git describe`); also the AppCache key |
 | `tools/release.ps1` | Computes the next version, checks, creates and pushes the tag |
@@ -124,9 +125,10 @@ Artifacts: `webkit-autoloader-x-installer_v<ver>[-<sha>]_ps5.elf`,
 `webkit-autoloader-x-host_v<ver>[-<sha>]_pc.py` and `..._windows.exe`. Dev builds carry the
 `-<sha>` suffix.
 
-The PC host's update check follows this fork's **Latest** release (`wkx-v*`), not PLK's.
+The PC host's update check follows this fork's **Latest** release (`x-v*`), not PLK's.
 
-> History: before `wkx-v1.0.0` the fork edited `WKAL_VERSION` to `<PLK version>.<build>x`
+> History: `wkx-v1.0.0` was the first fork-semver release (the prefix was `wkx-v` until it
+> was unified to `x-v`; `x-v1.0.0` marks the same commit). Before that, the fork edited `WKAL_VERSION` to `<PLK version>.<build>x`
 > (`0.3.0.1x` … `0.4.0.3x`). Those `v*x` tags and releases remain as they are.
 
 ## Release procedure
@@ -180,7 +182,7 @@ Then tag it from an up-to-date `main` with `tools/release.ps1` (PowerShell):
 | `-DryRun` | shows what would happen |
 | `-Yes` | skips the confirmation prompt |
 
-It pushes only the `wkx-v*` tag; the **Release** workflow builds and publishes it. Alternatively,
+It pushes only the `x-v*` tag; the **Release** workflow builds and publishes it. Alternatively,
 run **Release** from the Actions tab on `main` and enter the version.
 
 > If `download_deps.sh` reports "could not fetch release", the submodule is checked out at an
@@ -195,7 +197,7 @@ git merge upstream/main
 ```
 
 The "based on" version follows automatically; the fork version changes only when a new
-`wkx-v*` tag is pushed.
+`x-v*` tag is pushed.
 
 Expect conflicts only in the files listed above. The exploit patches (`patches/`), the frontend
 and the caching logic are untouched by this fork, so they should merge cleanly.

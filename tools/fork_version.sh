@@ -7,15 +7,16 @@
 #   tools/fork_version.sh parse <tag>     validates a release tag and prints
 #                                         "<version> <release|prerelease>"
 #
-# Release tags:  wkx-vMAJOR.MINOR.PATCH                   -> release (marked Latest)
-#                wkx-vMAJOR.MINOR.PATCH-(alpha|beta|rc).N -> pre-release
+# Release tags:  x-vMAJOR.MINOR.PATCH                   -> release (marked Latest)
+#                x-vMAJOR.MINOR.PATCH-(alpha|beta|rc).N -> pre-release
 #
-# The prefix is "wkx-v" so it never collides with upstream PLK's "v*" tags
-# (fetched into the same clone) or with the other -x forks' prefixes.
+# The prefix is "x-v", the same as every bsk193 -x fork (payload-manager-x,
+# ps5-y2jb-autoloader-x, pkg-manager-x); it never collides with upstream PLK's
+# "v*" tags fetched into the same clone.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-PREFIX='wkx-v'
+PREFIX='x-v'
 TAG_RE="^${PREFIX}(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(alpha|beta|rc)\.(0|[1-9][0-9]*))?$"
 
 case "${1:-}" in

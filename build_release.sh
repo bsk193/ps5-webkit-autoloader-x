@@ -3,7 +3,7 @@
 #
 # Version: X_VERSION from the environment (CI passes the release version or
 # `tools/fork_version.sh dev`), else gen_version.py's `git describe` on the
-# wkx-v* tags. ARTIFACT_SUFFIX (e.g. "-abc1234" for dev builds) is appended to
+# x-v* tags. ARTIFACT_SUFFIX (e.g. "-abc1234" for dev builds) is appended to
 # the artifact names only:
 #
 #   webkit-autoloader-x-installer_v<version>[-<sha>]_ps5.elf

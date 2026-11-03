@@ -1,25 +1,25 @@
 <#
 .SYNOPSIS
-    Creates and pushes a WebKit Autoloader X release tag (wkx-v<version>), which starts
+    Creates and pushes a WebKit Autoloader X release tag (x-v<version>), which starts
     the GitHub "Release" workflow.
 
 .DESCRIPTION
-    Release      wkx-v1.2.3          -> GitHub release, marked Latest
-    Pre-release  wkx-v1.2.3-beta.1   -> GitHub pre-release (alpha / beta / rc)
+    Release      x-v1.2.3          -> GitHub release, marked Latest
+    Pre-release  x-v1.2.3-beta.1   -> GitHub pre-release (alpha / beta / rc)
 
     Checks before tagging: working tree clean, on main, main up to date with
-    the fork remote, tag not taken. Versions are computed from the existing wkx-v* tags.
+    the fork remote, tag not taken. Versions are computed from the existing x-v* tags.
 
 .EXAMPLE
-    .\tools\release.ps1 -Bump patch                 # 1.0.0 -> wkx-v1.0.1
+    .\tools\release.ps1 -Bump patch                 # 1.0.0 -> x-v1.0.1
 .EXAMPLE
-    .\tools\release.ps1 -Bump minor -Pre beta       # 1.0.1 -> wkx-v1.1.0-beta.1
+    .\tools\release.ps1 -Bump minor -Pre beta       # 1.0.1 -> x-v1.1.0-beta.1
 .EXAMPLE
-    .\tools\release.ps1 -Pre beta                   # next beta of the pending pre-release: wkx-v1.1.0-beta.2
+    .\tools\release.ps1 -Pre beta                   # next beta of the pending pre-release: x-v1.1.0-beta.2
 .EXAMPLE
-    .\tools\release.ps1 -Pre rc                     # switch to release candidate: wkx-v1.1.0-rc.1
+    .\tools\release.ps1 -Pre rc                     # switch to release candidate: x-v1.1.0-rc.1
 .EXAMPLE
-    .\tools\release.ps1 -Promote                    # wkx-v1.1.0-rc.1 -> stable wkx-v1.1.0
+    .\tools\release.ps1 -Promote                    # x-v1.1.0-rc.1 -> stable x-v1.1.0
 .EXAMPLE
     .\tools\release.ps1 -Version 2.0.0-rc.1 -DryRun # explicit version, show what would happen
 #>
@@ -39,7 +39,7 @@ param(
     [Parameter(ParameterSetName = 'Promote', Mandatory = $true)]
     [switch]$Promote,
 
-    # Exact version, e.g. 1.2.3 or 1.2.3-beta.1 (without the wkx-v prefix).
+    # Exact version, e.g. 1.2.3 or 1.2.3-beta.1 (without the x-v prefix).
     [Parameter(ParameterSetName = 'Explicit', Mandatory = $true)]
     [string]$Version,
 
@@ -126,7 +126,7 @@ Write-Host "Fetching $Remote (branches and tags)..." -ForegroundColor DarkGray
 # No --prune: with --tags it would delete the upstream v* tags fetched from itsPLK.
 Invoke-Git fetch --quiet --tags $Remote | Out-Null
 
-$all = @(Invoke-Git tag -l 'wkx-v*' | ForEach-Object { ConvertTo-Ver ($_.Trim() -replace '^wkx-v', '') } | Where-Object { $_ })
+$all = @(Invoke-Git tag -l 'x-v*' | ForEach-Object { ConvertTo-Ver ($_.Trim() -replace '^x-v', '') } | Where-Object { $_ })
 $all = @($all | Sort-Object { Get-SortKey $_ })
 $latest = if ($all.Count) { $all[-1] } else { $null }
 $stable = @($all | Where-Object { -not $_.PreKind })
@@ -140,14 +140,14 @@ function Get-NextPreNum([int]$maj, [int]$min, [int]$pat, [string]$kind) {
 
 switch ($PSCmdlet.ParameterSetName) {
     'Explicit' {
-        $new = $Version.Trim() -replace '^wkx-v', '' -replace '^v', ''
+        $new = $Version.Trim() -replace '^x-v', '' -replace '^v', ''
         if (-not (ConvertTo-Ver $new)) {
             Fail "Invalid version '$new'. Use 1.2.3 or 1.2.3-beta.1 (alpha/beta/rc)."
         }
     }
     'Promote' {
         if (-not $pending) {
-            if ($latest) { Fail "No pending pre-release to promote (the latest tag wkx-v$($latest.Text) is already stable)." }
+            if ($latest) { Fail "No pending pre-release to promote (the latest tag x-v$($latest.Text) is already stable)." }
             Fail 'No releases yet, nothing to promote. Start with e.g. -Bump major -Pre beta'
         }
         $new = Format-Ver $pending.Major $pending.Minor $pending.Patch '' 0
@@ -194,7 +194,7 @@ switch ($PSCmdlet.ParameterSetName) {
 }
 
 $newVer = ConvertTo-Ver $new
-$tag = "wkx-v$new"
+$tag = "x-v$new"
 $isPre = [bool]$newVer.PreKind
 
 if ($latest -and (Get-SortKey $newVer) -le (Get-SortKey $latest) -and $PSCmdlet.ParameterSetName -eq 'Explicit') {
@@ -241,7 +241,7 @@ Write-Host ("  Tag         : {0}" -f $tag)
 Write-Host ("  Type        : {0}" -f $(if ($isPre) { "PRE-RELEASE ($($newVer.PreKind)), not marked Latest" } else { 'RELEASE, marked Latest' }))
 Write-Host ("  Based on    : WebKit Autoloader v{0}" -f $upstream)
 Write-Host ("  Commit      : {0} {1}" -f $head.Substring(0, 7), $subject)
-Write-Host ("  Previous    : {0}" -f $(if ($latest) { "wkx-v$($latest.Text)" } else { '(first release)' }))
+Write-Host ("  Previous    : {0}" -f $(if ($latest) { "x-v$($latest.Text)" } else { '(first release)' }))
 Write-Host ''
 
 if ($problems.Count) {

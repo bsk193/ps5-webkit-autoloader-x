@@ -14,7 +14,7 @@
 > The exploit chain, browser handling and app killing are unchanged upstream behaviour.
 > It installs as a **separate** homescreen app called **Jailbreak** (`WKLX00001`, port 18282), so it
 > coexists with the official autoloader rather than replacing it. Versions are this fork's own
-> (`wkx-v*` tags); each release says which upstream version it is based on. See [FORK.md](FORK.md).
+> (`x-v*` tags); each release says which upstream version it is based on. See [FORK.md](FORK.md).
 
 <p align="center">
     <b>Other Autoloaders:</b><br>

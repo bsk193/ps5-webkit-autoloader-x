@@ -10,7 +10,7 @@ TARGET := $(SDK)/target
 CFLAGS := -Os -Wall -ffunction-sections -fdata-sections -Iinclude -I$(INSTALLER_COMMON) -I$(TARGET)/include
 LDFLAGS := -Wl,--gc-sections
 
-# Fork version (wkx-v* tags, see FORK.md / tools/fork_version.sh). CI passes
+# Fork version (x-v* tags, see FORK.md / tools/fork_version.sh). CI passes
 # X_VERSION explicitly; local builds fall back to `git describe`. Shown by the
 # installer as WKAL_X_VERSION (include/version_x.h).
 # (Not `?=`: build_release.sh passes X_VERSION into Docker even when empty.)
