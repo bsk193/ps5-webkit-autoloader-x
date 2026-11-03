@@ -6,6 +6,8 @@
       .jb-rim{fill:none;stroke:url(#jbRimGrad);stroke-width:10;}
       .jb-link{fill:none;stroke:url(#jbChainGrad);stroke-width:58;stroke-linejoin:round;}
       .jb-shard{fill:url(#jbChainGrad);}
+      .jb-corner{fill:#08142a;stroke:#83bcf1;stroke-width:10;}
+      .jb-globe{fill:none;stroke:#e8f4ff;stroke-width:13;stroke-linecap:round;}
     </style>
 
     <!-- Dark sphere, matching the autoloader icon family -->
@@ -43,4 +45,13 @@
   <polygon class="jb-shard" points="468,446 490,468 468,490 446,468"/>
   <polygon class="jb-shard" points="612,600 630,618 612,636 594,618"/>
   <polygon class="jb-shard" points="412,390 428,406 412,422 396,406"/>
+
+  <!-- Corner badge: globe = the WebKit (browser) variant. Y2JB uses a play badge. -->
+  <g transform="translate(760 760)">
+    <circle class="jb-corner" r="138"/>
+    <circle class="jb-globe" r="88"/>
+    <ellipse class="jb-globe" rx="38" ry="88"/>
+    <line class="jb-globe" x1="-88" y1="0" x2="88" y2="0"/>
+    <path class="jb-globe" d="M -76 -44 Q 0 -30 76 -44 M -76 44 Q 0 30 76 44"/>
+  </g>
 </svg>
