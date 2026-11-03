@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Download pinned elfldr and unified-autoloader release assets for the HTML build.
+# Download pinned elfldr and Payload Manager X (pldmgrx) release assets for the HTML build.
 # Assets and verified digest sidecars are cached under build/deps/.
 set -euo pipefail
 
@@ -11,10 +11,11 @@ ELFLDR_REPO="itsPLK/ps5-elfldr"
 ELFLDR_DEST="$ROOT/build/deps/elfldr.elf"
 
 # Bundled autoload payload
-# Fork: the payload is bsk193/ps5-unified-autoloader-x, which always launches
-# the embedded Payload Manager X instead of the official Payload Manager.
-PAYLOAD_SUBMODULE="$ROOT/third_party/ps5-unified-autoloader-x"
-PAYLOAD_REPO="bsk193/ps5-unified-autoloader-x"
+# Fork: the page autoloads Payload Manager X (bsk193/ps5-payload-manager-x,
+# port 8084) directly, instead of upstream's ps5-unified-autoloader. The release
+# is pinned explicitly (no submodule): bump PLDMGRX_TAG to ship a new manager.
+PLDMGRX_TAG="${PLDMGRX_TAG:-x-v1.0.0}"
+PAYLOAD_REPO="bsk193/ps5-payload-manager-x"
 PAYLOAD_DEST="$ROOT/build/deps/autoload.elf"
 
 # Fetch the pinned release, verify the payload, and download it if needed.
@@ -140,14 +141,8 @@ if [ ! -e "$ELFLDR_SUBMODULE/.git" ]; then
     exit 1
 fi
 
-if [ ! -e "$PAYLOAD_SUBMODULE/.git" ]; then
-    echo "Error: ps5-unified-autoloader-x submodule is not initialised."
-    echo "Run: git submodule update --init"
-    exit 1
-fi
 
 ELFLDR_TAG="${ELFLDR_TAG:-$(git -C "$ELFLDR_SUBMODULE" describe --tags --always 2>/dev/null || echo v0.27-b57d0e9)}"
-PAYLOAD_TAG="${PAYLOAD_TAG:-$(git -C "$PAYLOAD_SUBMODULE" describe --tags --always 2>/dev/null || echo v0.1.7.1x-unknown)}"
 
 download_release "$ELFLDR_REPO" "$ELFLDR_TAG" "$ELFLDR_DEST"
-download_release "$PAYLOAD_REPO" "$PAYLOAD_TAG" "$PAYLOAD_DEST"
+download_release "$PAYLOAD_REPO" "$PLDMGRX_TAG" "$PAYLOAD_DEST"

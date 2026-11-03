@@ -9,9 +9,9 @@ name: Release
 # The version is our own semver; the notes say which upstream WebKit Autoloader
 # release it is based on (WKAL_VERSION in include/wkali.h at that commit).
 #
-# Reminder: the bundled payload.elf is resolved from the pinned
-# third_party/ps5-unified-autoloader-x submodule's release, so cut that release
-# first (see FORK.md, "Release procedure").
+# Reminder: the autoloaded Payload Manager X ELF is the release pinned by
+# PLDMGRX_TAG in tools/download_deps.sh, so publish that release first (see
+# FORK.md, "Release procedure").
 on:
   push:
     tags: ['wkx-v*']

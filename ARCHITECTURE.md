@@ -16,12 +16,14 @@ The exploit chains, caching design, installer and PC host are upstream's. Only t
 
 | | Upstream | This fork |
 |---|---|---|
-| Bundled payload | `itsPLK/ps5-unified-autoloader` | `bsk193/ps5-unified-autoloader-x` (always launches [Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x), port 8084) |
-| Homescreen app | `WKAL00001` / "WebKit Autoloader" | `WKLX00001` / "Jailbreak" |
+| Autoloaded payload | `itsPLK/ps5-unified-autoloader` (launches Payload Manager when no `autoload.txt`) | [Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x) `pldmgrx_v*.elf` directly, port 8084 (`PLDMGRX_TAG`) |
+| Homescreen app | `WKAL00001` / "WebKit Autoloader" | `WKLX00001` / "Jailbreak", broken-chain icon |
 | Installer port / deeplink | 18181 | 18282 (`WKALI_PORT`; AppCache is keyed by origin) |
 | Version | `WKAL_VERSION` | own semver from `wkx-v*` tags; `WKAL_VERSION` only read for "based on vX" |
 
-Where upstream text below says 18181 or `WKAL00001`, this fork uses 18282 and `WKLX00001`.
+Where upstream text below says 18181, `WKAL00001` or `ps5-unified-autoloader`, this fork uses
+18282, `WKLX00001` and pldmgrx. `ps5_autoloader/autoload.txt` is not read in this fork; use
+Payload Manager X's autoload profiles.
 See [FORK.md](FORK.md).
 
 ## Runtime

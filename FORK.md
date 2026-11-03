@@ -1,40 +1,43 @@
 # Fork notes
 
-This repo is a fork of [itsPLK/ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader)
-that loads [Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x) instead of the
-official Payload Manager.
+This repo is a fork of [itsPLK/ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader).
+It installs a homescreen app called **Jailbreak** (broken-chain icon) that runs the same WebKit
+exploit chains, then autoloads **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)**
+(pldmgrx, port 8084) instead of upstream's unified-autoloader + official Payload Manager.
 
 ## Dependency chain
 
 ```
-bsk193/ps5-webkit-autoloader-x          (this repo — exploit chain + installer)
-  └─ payload.elf
-     = bsk193/ps5-unified-autoloader-x  (fork: browser handling, app kill, autoload.txt)
-        └─ always-launched manager
-           = bsk193/ps5-payload-manager-x  (pldmgrx, HTTP port 8084)
+bsk193/ps5-webkit-autoloader-x            (this repo — installer, app identity, version)
+  ├─ itsPLK/ps5-webkit-remote-loader      (submodule, upstream as-is: chains, installer C helpers, PC host)
+  ├─ itsPLK/ps5-elfldr                    (release asset, pinned by submodule)
+  └─ autoload payload = pldmgrx_v*.elf    (release asset of bsk193/ps5-payload-manager-x,
+                                           pinned by PLDMGRX_TAG in tools/download_deps.sh)
 ```
 
-No exploit or caching logic was modified in either fork. The one behavioural change is in
-`ps5-unified-autoloader-x`: upstream launches the embedded manager **only** when no
-`autoload.txt` is found, so a leftover config silently suppresses it. This fork always launches
-it, treating `autoload.txt` as an additional payload chain rather than an alternative — its
-payloads run first, then the manager starts after a 2 s pause
-(`PLDMGRX_LAUNCH_DELAY_US` in `include/autoloader.h`).
+**No remote-loader fork is needed.** Remote-loader is product-neutral: it takes the embedded
+payload (`--embed`), app name/title ID/icon (`include/installer_config.h`) and host name
+(`--name`) from this repo, and nothing in it refers to pldmgr, the port or the title.
+
+**Why pldmgrx directly (since 0.6.2):** upstream's page autoloads `ps5-unified-autoloader`, which
+returns the browser to Home, kills entry apps / the disc player, runs `ps5_autoloader/autoload.txt`,
+and only then launches the official manager. This fork used `ps5-unified-autoloader-x` for that.
+Now the page streams pldmgrx straight to elfldr, and pldmgrx covers the rest itself (its own
+autoload profiles, disc-player kill, opening its UI). What is gone: the `ps5_autoloader/autoload.txt`
+folder on USB/internal storage. Configure startup payloads in Payload Manager X instead.
+`bsk193/ps5-unified-autoloader-x` is no longer used.
 
 ## What actually changed here
 
-Upstream 0.6.0 rebuilt the project on [ps5-webkit-remote-loader](https://github.com/itsPLK/ps5-webkit-remote-loader),
-which now owns the exploit chains, the shared installer C code and the PC host builder. The fork
-delta is correspondingly small:
+Upstream 0.6.0 rebuilt the project on remote-loader, so the fork delta is small:
 
 | File | Change |
 |---|---|
-| `.gitmodules`, `third_party/` | `ps5-unified-autoloader` → `ps5-unified-autoloader-x` (`bsk193/…`) |
-| `tools/download_deps.sh`, `Makefile` | payload submodule/repo and virtual ELF name point at the fork |
+| `tools/download_deps.sh`, `Makefile` | Autoload payload = pldmgrx release (`PLDMGRX_TAG`); no unified-autoloader submodule |
 | `include/wkali.h` | `WKALI_PORT` → `18282`; `WKAL_TITLE_ID` → `WKLX00001`; `WKAL_APP_LABEL` "Jailbreak" (`WKAL_VERSION` stays upstream's) |
 | `include/installer_config.h` | `INSTALLER_APP_NAME` → `WKAL_APP_LABEL` (remote-loader's installer notifications) |
 | `assets/param.json.template` | `titleId` → `WKLX00001`, `titleName` → "Jailbreak", deeplink port from `WKALI_PORT` |
-| `assets/icon.png`, `assets/icon.svg`, `tools/gen_icons.py`, `tools/embed_icon_png.py` | Fork icon (full-bleed raster) |
+| `assets/icon.svg` | Broken-chain icon (vector; `tools/gen_icons.py` is upstream's) |
 | `include/version_x.h`, `tools/fork_version.sh`, `tools/gen_version.py`, `tools/release.ps1` | Fork versioning (see below) |
 | `src/main.c`, `frontend/*`, `tools/gen_file_registry.py` | Branding and "X vN, based on vX" version display |
 | `build_release.sh`, `.gitignore`, `.github/workflows/` | Artifact names; `build.yml` (every push/PR) and tag-driven `release.yml` |
@@ -42,6 +45,8 @@ delta is correspondingly small:
 
 `WKAL_TITLE_ID` and `param.json.template`'s `titleId` **must always match** — the installer
 builds the app's install paths from the C constant while the metadata comes from the template.
+
+The homescreen label is plain **"Jailbreak"** with no version.
 
 ## Coexisting with upstream
 
@@ -51,7 +56,7 @@ builds the app's install paths from the C constant while the metadata comes from
 | Homescreen label | WebKit Autoloader | Jailbreak |
 | Deeplink | `127.0.0.1:18181/app/index.html` | `127.0.0.1:18282/app/index.html` |
 | Installer HTTP server | port 18181 | port 18282 |
-| Artifact | upstream's | `webkit-autoloader-x-installer_v*.elf` |
+| Artifact | upstream's | `webkit-autoloader-x-installer_v*_ps5.elf` |
 
 Two things must differ for both to coexist:
 
@@ -118,51 +123,21 @@ Artifacts: `webkit-autoloader-x-installer_v<ver>[-<sha>]_ps5.elf`,
 `webkit-autoloader-x-host_v<ver>[-<sha>]_pc.py` and `..._windows.exe`. Dev builds carry the
 `-<sha>` suffix.
 
-The PC host's update check follows this fork's **Latest** release (`wkx-v*`), not PLK's.
-
 > History: before `wkx-v1.0.0` the fork edited `WKAL_VERSION` to `<PLK version>.<build>x`
 > (`0.3.0.1x` … `0.4.0.3x`). Those `v*x` tags and releases remain as they are.
 
 ## Release procedure
 
-`tools/download_deps.sh` resolves the payload with `git describe --tags` on the
-`third_party/ps5-unified-autoloader-x` submodule and then downloads the GitHub **release** with
-that exact tag. So the releases must be cut bottom-up:
+**1. Payload Manager X** (only when the manager changes)
 
-**1. Payload Manager X** (only when the manager itself changes)
+Released from `bsk193/ps5-payload-manager-x` with its own `tools/release.ps1` (`x-v*` tags). Its
+release must carry one `pldmgrx_v<ver>.elf` asset built with `PLDMGRX=1 PLDMGRX_PORT=8084`.
 
-Push a `v*` tag; its `release.yml` builds `pldmgrx_<tag>.elf` with `PLDMGRX=1 PLDMGRX_PORT=8084`.
+**2. This repo**
 
-**2. ps5-unified-autoloader-x**
-
-```bash
-cd ../ps5-unified-autoloader-x
-# optional: bump the embedded manager
-git -C third_party/ps5-payload-manager-x fetch --tags
-git -C third_party/ps5-payload-manager-x checkout v0.5.1.2x   # or newer
-git commit -am "deps: bump Payload Manager X"
-git push fork main
-```
-
-Then run its **release** workflow (`workflow_dispatch`). It tags
-`v<AUTOLOADER_VERSION>-<short-sha>` and publishes `ps5-unified-autoloader-x-v*.elf`.
-
-> Its default build path downloads the latest published `pldmgrx_v*.elf` — it does **not** use
-> the submodule. The submodule pin only matters for `./build_release.sh -b` (source builds).
-
-**3. This repo**
-
-Point the submodule at the tag that step 2 just created, then release:
-
-```bash
-git submodule update --init --recursive
-git -C third_party/ps5-unified-autoloader-x fetch --tags
-git -C third_party/ps5-unified-autoloader-x checkout <tag from step 2>
-git commit -am "deps: bump ps5-unified-autoloader-x"
-git push fork main
-```
-
-Then tag it from an up-to-date `main` with `tools/release.ps1` (PowerShell):
+Bump `PLDMGRX_TAG` in `tools/download_deps.sh` to the new `x-v*` tag when the manager changed,
+push a branch and let `build.yml` pass, merge to `main`, then tag with `tools/release.ps1`
+(PowerShell):
 
 | Command | Result |
 |---|---|
@@ -177,9 +152,8 @@ Then tag it from an up-to-date `main` with `tools/release.ps1` (PowerShell):
 It pushes only the `wkx-v*` tag; the **Release** workflow builds and publishes it. Alternatively,
 run **Release** from the Actions tab on `main` and enter the version.
 
-> If `download_deps.sh` reports "could not fetch release", the submodule is checked out at an
-> untagged commit or the corresponding release has not been published yet. `git describe --tags`
-> inside the submodule tells you which tag it resolved to.
+> `download_deps.sh` verifies the asset's sha256 against the GitHub release digest and caches it
+> in `build/deps/`. "could not fetch release" means `PLDMGRX_TAG` names a tag with no release.
 
 ## Syncing with upstream
 
@@ -189,9 +163,7 @@ git merge upstream/main
 ```
 
 The "based on" version follows automatically; the fork version changes only when a new
-`wkx-v*` tag is pushed.
-
-Expect conflicts only in the files listed above. The exploit patches (`patches/`), the frontend
-and the caching logic are untouched by this fork, so they should merge cleanly.
+`wkx-v*` tag is pushed. Bump `third_party/ps5-webkit-remote-loader` and `ps5-elfldr` only as
+upstream does (they come in with the merge).
 
 Remotes: `upstream` = itsPLK (read-only), `fork` = bsk193.

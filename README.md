@@ -7,11 +7,12 @@
 
 > [!IMPORTANT]
 > **This is a fork of [itsPLK/ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader).**
-> It loads **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)** (port **8084**)
-> instead of the official [Payload Manager](https://github.com/itsPLK/ps5-payload-manager), and it starts it
-> **every launch** rather than only as a fallback when no `autoload.txt` exists.
+> After the exploit it loads **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)** (port **8084**)
+> directly, **every launch**, instead of upstream's unified-autoloader + official
+> [Payload Manager](https://github.com/itsPLK/ps5-payload-manager). Set up startup payloads with Payload
+> Manager X's autoload profiles; the `ps5_autoloader/autoload.txt` folder described below is **not** read.
 >
-> The exploit chain, browser handling and app killing are unchanged upstream behaviour.
+> The exploit chains are unchanged upstream behaviour.
 > It installs as a **separate** homescreen app called **Jailbreak** (`WKLX00001`, port 18282), so it
 > coexists with the official autoloader rather than replacing it. Versions are this fork's own
 > (`wkx-v*` tags); each release says which upstream version it is based on. See [FORK.md](FORK.md).
@@ -61,8 +62,8 @@ There are two ways to configure payloads:
 ### 🟢 Option 1: Payload Manager
 
 > **Fork:** this build always launches **[Payload Manager X](https://github.com/bsk193/ps5-payload-manager-x)**
-> (port 8084), also when an `autoload.txt` exists — its payloads run first. The upstream text below
-> describes the official Payload Manager behaviour.
+> (port 8084). Option 2 below (`ps5_autoloader/autoload.txt`) is upstream-only; use Payload Manager X's
+> autoload profiles instead. The upstream text below describes the official Payload Manager.
 
 If no `autoload.txt` config is found, the autoloader will automatically launch **[Payload Manager](https://github.com/itsPLK/ps5-payload-manager)** — a fully-featured PS5 payload manager with a web UI. This lets you configure and send payloads directly from your browser, without needing to manually set up config files or transfer ELF files ahead of time.
 

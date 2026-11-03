@@ -1,6 +1,3 @@
-[submodule "third_party/ps5-unified-autoloader-x"]
-	path = third_party/ps5-unified-autoloader-x
-	url = https://github.com/bsk193/ps5-unified-autoloader-x.git
 [submodule "third_party/ps5-elfldr"]
 	path = third_party/ps5-elfldr
 	url = https://github.com/itsPLK/ps5-elfldr.git
