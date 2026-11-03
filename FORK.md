@@ -43,6 +43,7 @@ delta is correspondingly small:
 | `assets/icon.png`, `assets/icon.svg`, `tools/embed_icon_png.py`, `tools/gen_icons.py` | Jailbreak icon: broken chain + globe badge (raster master, 512x512). `embed_icon_png.py` wraps it into `icon.svg`; `gen_icons.py` uses it full-bleed (no padding) |
 | `include/version_x.h`, `tools/fork_version.sh`, `tools/gen_version.py`, `tools/release.ps1` | Fork versioning (see below) |
 | `src/main.c`, `frontend/*`, `tools/gen_file_registry.py` | Branding and "X vN, based on vX" version display |
+| `frontend/autoloader/theme-x.{css,js}`, `<style id="theme-x">` in `frontend/installer-page/index.html` | Jailbreak theme (navy, chrome wordmark, blue glow), layered on upstream's styles via `PAGE_CSS`/`PAGE_JS` |
 | `build_release.sh`, `.gitignore`, `.github/workflows/` | Artifact names; `build.yml` (every push/PR) and tag-driven `release.yml` |
 | `README.md`, `ARCHITECTURE.md` | Fork notes |
 

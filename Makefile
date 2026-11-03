@@ -43,8 +43,9 @@ CHAINS := poops relapse
 # submodule payloads; each exploit prefetches elfldr/kexp itself.
 # Autoloader appearance is embedded through the upstream builder's hooks.
 # Each variable accepts a whitespace-separated list of file paths.
-PAGE_CSS ?= frontend/autoloader/style.css
-PAGE_JS ?= frontend/autoloader/app.js
+# Fork: theme-x.{css,js} add the Jailbreak look on top of upstream's files.
+PAGE_CSS ?= frontend/autoloader/style.css frontend/autoloader/theme-x.css
+PAGE_JS ?= frontend/autoloader/app.js frontend/autoloader/theme-x.js
 PAGE_CONFIG := build/page-config.js
 ELFLDR_TAG ?= $(shell git -C third_party/ps5-elfldr describe --tags --always 2>/dev/null || echo v0.27-b57d0e9)
 ELFLDR_VIRTUAL := shared/elfldr-ps5-$(ELFLDR_TAG).elf

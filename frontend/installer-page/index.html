@@ -368,13 +368,127 @@
       #cacheCorruptOverlay .card { margin: 1rem; }
     }
   </style>
+  <style id="theme-x">
+    /* Jailbreak (WebKit Autoloader X) theme: overrides upstream's styles above.
+       Palette follows the icon: deep navy, polished chrome, electric-blue glow. */
+    body {
+      background: #01041c;
+      background: -webkit-radial-gradient(50% 30%, circle, #0b1d6b 0%, #030a3d 45%, #01041c 100%);
+      background: radial-gradient(circle at 50% 30%, #0b1d6b 0%, #030a3d 45%, #01041c 100%);
+      color: #dbe6f7;
+    }
+    .logo {
+      width: 9rem;
+      height: 9rem;
+      margin-bottom: 1.5rem;
+      border-radius: 22%;
+      -webkit-box-shadow: 0 0 0 1px rgba(90, 170, 255, 0.35), 0 0 36px rgba(42, 168, 255, 0.45);
+      box-shadow: 0 0 0 1px rgba(90, 170, 255, 0.35), 0 0 36px rgba(42, 168, 255, 0.45);
+    }
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: 0.32em;
+      padding-left: 0.32em;
+      margin-bottom: 0.25rem;
+      color: #e9eef7;
+      background: -webkit-linear-gradient(90deg, #ffffff 0%, #c9d3e3 45%, #7f8ca3 55%, #f2f5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 28px rgba(42, 168, 255, 0.35);
+    }
+    .x-sub {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #5ad8ff;
+      margin-bottom: 1.75rem;
+    }
+    p { color: #9fb1d6; }
+    #status { color: #5ad8ff; }
+    #status.success { color: #55f0b5; }
+    #status.error { color: #ff5c7a; }
+    #progress {
+      height: 1.5rem;
+      background: rgba(2, 8, 40, 0.9);
+      border: 1px solid rgba(90, 170, 255, 0.4);
+      border-radius: 999px;
+      -webkit-box-shadow: 0 0 24px rgba(42, 168, 255, 0.25);
+      box-shadow: 0 0 24px rgba(42, 168, 255, 0.25);
+    }
+    #progressBar {
+      background: #2aa8ff;
+      background: -webkit-linear-gradient(90deg, #1a5cff 0%, #2aa8ff 55%, #5ad8ff 100%);
+      background: linear-gradient(90deg, #1a5cff 0%, #2aa8ff 55%, #5ad8ff 100%);
+    }
+    #progress.success #progressBar {
+      background: #55f0b5;
+      background: -webkit-linear-gradient(90deg, #1fbf8a 0%, #55f0b5 100%);
+      background: linear-gradient(90deg, #1fbf8a 0%, #55f0b5 100%);
+    }
+    #progress.error #progressBar { background: #ff5c7a; }
+    #logContainer {
+      background: rgba(2, 8, 40, 0.88);
+      border: 1px solid rgba(90, 170, 255, 0.3);
+      border-radius: 12px;
+      color: #9fb1d6;
+    }
+    #logContainer.error { color: #ff5c7a; }
+    .choice-card {
+      background: rgba(3, 10, 61, 0.85);
+      border: 2px solid rgba(90, 170, 255, 0.28);
+      border-radius: 16px;
+    }
+    .choice-card.selected {
+      border-color: rgba(90, 216, 255, 0.6);
+      background-color: rgba(42, 168, 255, 0.08);
+    }
+    .choice-card:hover,
+    .choice-card:focus {
+      border-color: #5ad8ff;
+      background-color: rgba(11, 29, 107, 0.9);
+      -webkit-box-shadow: 0 0 0 3px rgba(90, 216, 255, 0.35), 0 0 28px rgba(42, 168, 255, 0.45);
+      box-shadow: 0 0 0 3px rgba(90, 216, 255, 0.35), 0 0 28px rgba(42, 168, 255, 0.45);
+    }
+    .choice-card .choice-title { color: #e9eef7; }
+    .choice-card .choice-fw {
+      color: #5ad8ff;
+      background: rgba(42, 168, 255, 0.12);
+      border-color: rgba(90, 216, 255, 0.35);
+    }
+    .choice-card .choice-desc { color: #9fb1d6; }
+    #cacheCorruptOverlay { background: rgba(1, 4, 28, 0.88); }
+    #cacheCorruptOverlay .card {
+      background: rgba(3, 10, 61, 0.95);
+      border: 1px solid rgba(90, 170, 255, 0.35);
+      border-radius: 16px;
+      -webkit-box-shadow: 0 0 36px rgba(42, 168, 255, 0.3);
+      box-shadow: 0 0 36px rgba(42, 168, 255, 0.3);
+    }
+    #cacheCorruptOverlay h2 { color: #ffd166; }
+    #cacheCorruptOverlay p { color: #9fb1d6; }
+    #cacheCorruptOverlay .btn { border-radius: 999px; }
+    #cacheCorruptOverlay .btn.primary {
+      background: #2aa8ff;
+      background: -webkit-linear-gradient(90deg, #1a5cff 0%, #2aa8ff 100%);
+      background: linear-gradient(90deg, #1a5cff 0%, #2aa8ff 100%);
+    }
+    #cacheCorruptOverlay .btn.secondary { background: rgba(90, 170, 255, 0.16); color: #dbe6f7; }
+    #footer { color: #4f5f86; }
+    @media (max-width: 560px) {
+      h1 { font-size: 2.1rem; }
+      .x-sub { font-size: 0.8rem; }
+    }
+  </style>
 
 </head>
 
 <body>
   <main>
     <img class="logo" src="/logo.svg" alt="Jailbreak" />
-    <h1>WebKit Autoloader X Installer</h1>
+    <h1>JAILBREAK</h1>
+    <div class="x-sub">WebKit Installer &middot; Payload Manager X</div>
     <p id="status">Caching content...</p>
     <p id="detail">Please wait a moment. Do not close this page yet!</p>
 

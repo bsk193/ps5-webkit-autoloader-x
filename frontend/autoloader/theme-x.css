@@ -1,0 +1,95 @@
+/* Jailbreak (WebKit Autoloader X) theme — loaded after upstream's style.css via
+ * PAGE_CSS, so upstream's file stays untouched. Palette follows the icon:
+ * deep navy, polished chrome, electric-blue glow. Prefixed for PS5 WebKit. */
+
+body,
+#loader {
+  background: #01041c;
+  background: -webkit-radial-gradient(50% 38%, circle, #0b1d6b 0%, #030a3d 45%, #01041c 100%);
+  background: radial-gradient(circle at 50% 38%, #0b1d6b 0%, #030a3d 45%, #01041c 100%);
+  color: #dbe6f7;
+}
+
+/* Wordmark: chrome text with a blue under-glow. */
+#xHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+}
+#xHeader .x-title {
+  font-size: 3.25rem;
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  padding-left: 0.32em; /* balance the trailing letter-spacing */
+  color: #e9eef7;
+  background: -webkit-linear-gradient(90deg, #ffffff 0%, #c9d3e3 45%, #7f8ca3 55%, #f2f5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 28px rgba(42, 168, 255, 0.35);
+}
+#xHeader .x-sub {
+  margin-top: 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #5ad8ff;
+}
+
+#logWrapper {
+  height: 60%;
+  background: rgba(2, 8, 40, 0.88);
+  border: 1px solid rgba(90, 170, 255, 0.35);
+  border-radius: 14px;
+  -webkit-box-shadow: 0 0 0 1px rgba(1, 4, 28, 0.6), 0 0 32px rgba(42, 168, 255, 0.18) inset;
+  box-shadow: 0 0 0 1px rgba(1, 4, 28, 0.6), 0 0 32px rgba(42, 168, 255, 0.18) inset;
+}
+#console,
+#console .log-info, #console .log-setup, #console .log-star, #console .log-log {
+  color: #9fb1d6;
+}
+#console .log-cyan { color: #5ad8ff; }
+#console .log-success, #console .log-plus { color: #55f0b5; }
+#console .log-warn { color: #ffd166; }
+#console .log-error, #console .log-minus { color: #ff5c7a; }
+
+#progressContainer {
+  background: rgba(2, 8, 40, 0.9);
+  border: 1px solid rgba(90, 170, 255, 0.4);
+  border-radius: 14px;
+  -webkit-box-shadow: 0 0 24px rgba(42, 168, 255, 0.25);
+  box-shadow: 0 0 24px rgba(42, 168, 255, 0.25);
+}
+#progressBar {
+  background: #2aa8ff;
+  background: -webkit-linear-gradient(90deg, #1a5cff 0%, #2aa8ff 55%, #5ad8ff 100%);
+  background: linear-gradient(90deg, #1a5cff 0%, #2aa8ff 55%, #5ad8ff 100%);
+  -webkit-box-shadow: 0 0 18px rgba(90, 216, 255, 0.75);
+  box-shadow: 0 0 18px rgba(90, 216, 255, 0.75);
+}
+#progressContainer[data-state="error"] #progressBar {
+  background: #ff5c7a;
+  -webkit-box-shadow: 0 0 18px rgba(255, 92, 122, 0.7);
+  box-shadow: 0 0 18px rgba(255, 92, 122, 0.7);
+}
+#progressContainer[data-state="done"] #progressBar {
+  background: #55f0b5;
+  background: -webkit-linear-gradient(90deg, #1fbf8a 0%, #55f0b5 100%);
+  background: linear-gradient(90deg, #1fbf8a 0%, #55f0b5 100%);
+  -webkit-box-shadow: 0 0 18px rgba(85, 240, 181, 0.7);
+  box-shadow: 0 0 18px rgba(85, 240, 181, 0.7);
+}
+#progressLabel {
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 3px rgba(1, 4, 28, 0.9);
+}
+
+#footer { color: #4f5f86; }
+
+@media (max-width: 600px) {
+  #xHeader { margin-bottom: 1rem; }
+  #xHeader .x-title { font-size: 2.1rem; }
+  #xHeader .x-sub { font-size: 0.8rem; }
+  #logWrapper { height: 55%; }
+}
