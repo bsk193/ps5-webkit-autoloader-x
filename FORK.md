@@ -141,24 +141,18 @@ that exact tag. So the releases must be cut bottom-up:
 
 **1. Payload Manager X** (only when the manager itself changes)
 
-Push a `v*` tag; its `release.yml` builds `pldmgrx_<tag>.elf` with `PLDMGRX=1 PLDMGRX_PORT=8084`.
+Tag `x-v*` with its `tools/release.ps1`; the release publishes one `pldmgrx_v<ver>.elf`
+(built with `PLDMGRX=1 PLDMGRX_PORT=8084`).
 
 **2. ps5-unified-autoloader-x**
 
-```bash
-cd ../ps5-unified-autoloader-x
-# optional: bump the embedded manager
-git -C third_party/ps5-payload-manager-x fetch --tags
-git -C third_party/ps5-payload-manager-x checkout v0.5.1.2x   # or newer
-git commit -am "deps: bump Payload Manager X"
-git push fork main
-```
+Merge to its `main`, then tag `x-v*` with its `tools/release.ps1` (same scheme as this repo).
+The release builds against the **latest** published `pldmgrx_v*.elf` and publishes
+`ps5-unified-autoloader-x_v<ver>_ps5.elf`.
 
-Then run its **release** workflow (`workflow_dispatch`). It tags
-`v<AUTOLOADER_VERSION>-<short-sha>` and publishes `ps5-unified-autoloader-x-v*.elf`.
-
-> Its default build path downloads the latest published `pldmgrx_v*.elf` — it does **not** use
-> the submodule. The submodule pin only matters for `./build_release.sh -b` (source builds).
+> Its build downloads the latest pldmgrx release; it does **not** use its
+> `third_party/ps5-payload-manager-x` submodule, which only matters for `./build_release.sh -b`
+> (source builds). Releases before `x-v1.0.0` were `v<PLK version>.<build>x-<sha>`.
 
 **3. This repo**
 
@@ -167,8 +161,8 @@ Point the submodule at the tag that step 2 just created, then release:
 ```bash
 git submodule update --init --recursive
 git -C third_party/ps5-unified-autoloader-x fetch --tags
-git -C third_party/ps5-unified-autoloader-x checkout <tag from step 2>
-git commit -am "deps: bump ps5-unified-autoloader-x"
+git -C third_party/ps5-unified-autoloader-x checkout x-v<version from step 2>
+git commit -am "build(deps): bump ps5-unified-autoloader-x"
 git push fork main
 ```
 

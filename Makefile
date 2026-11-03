@@ -60,8 +60,9 @@ REGISTRY := include/file_registry.h include/file_registry.c
 ICONS := assets/icon0.png assets/icon.ico
 INSTALLER_LOGO := frontend/installer-page/logo.svg
 HOST_PAYLOAD ?= $(ELF)
-PAYLOAD_TAG ?= $(shell git -C third_party/ps5-unified-autoloader-x describe --tags --always 2>/dev/null || echo v0.1.7.1x-unknown)
-AUTOLOAD_PAYLOAD_VIRTUAL ?= ps5-unified-autoloader-x-$(PAYLOAD_TAG).elf
+PAYLOAD_TAG ?= $(shell git -C third_party/ps5-unified-autoloader-x describe --tags --always 2>/dev/null || echo x-v0.0.0-unknown)
+# x-v1.0.0 -> ps5-unified-autoloader-x-v1.0.0.elf
+AUTOLOAD_PAYLOAD_VIRTUAL ?= ps5-unified-autoloader-x-$(patsubst x-v%,v%,$(PAYLOAD_TAG)).elf
 HOST_PAYLOAD_VIRTUAL ?= $(if $(filter-out installer.elf,$(notdir $(HOST_PAYLOAD))),$(notdir $(HOST_PAYLOAD)),webkit-autoloader-x-installer_v$(BUILD_VERSION)_ps5.elf)
 
 # Optional cache-repair hardware test builds; use make clean all when changing.
