@@ -42,9 +42,8 @@ delta is correspondingly small:
 | `assets/param.json.template` | `titleId` → `WKLX00001`, `titleName` → "Jailbreak", deeplink port from `WKALI_PORT` |
 | `assets/icon.png`, `assets/icon.svg`, `tools/embed_icon_png.py`, `tools/gen_icons.py` | Homescreen tile icon: broken chain + globe badge (raster master, 512x512; badge kept clear of the tile's rounded corner). `embed_icon_png.py` wraps it into `icon.svg`; `gen_icons.py` uses it full-bleed (no padding) |
 | `include/version_x.h`, `tools/fork_version.sh`, `tools/gen_version.py`, `tools/release.ps1` | Fork versioning (see below) |
-| `src/main.c`, `frontend/*`, `tools/gen_file_registry.py` | Branding and "X vN, based on vX" version display |
-| `frontend/autoloader/theme-x.{css,js}`, `<style id="theme-x">` in `frontend/installer-page/index.html` | Jailbreak shared UI (dark, flat, small radii, one accent), layered on upstream's styles via `PAGE_CSS`/`PAGE_JS`. The Y2JB fork draws the same UI with the same values |
-| `assets/jb-logo.png`, `tools/embed_ui_logo.py` | Plain Jailbreak icon shown inside the UI (no badge; the badge is only for telling the homescreen tiles apart). The script inlines it into the installer page and theme-x.css |
+| `src/main.c`, `frontend/*`, `tools/gen_file_registry.py`, `tools/build_modular_page.py` | Branding and "X vN, based on vX" version display (`[[UPSTREAM_VERSION_PLACEHOLDER]]` in the autoloader page) |
+| `frontend/autoloader/theme-x.{css,js}`, `<style id="theme-x">` in `frontend/installer-page/index.html` | Jailbreak shared UI (dark, flat, small radii, one accent; wordmark only, since the icon is only the homescreen tile), layered on upstream's styles. `frontend/autoloader/index.html` links them after upstream's `style.css`/`app.js` and `tools/build_modular_page.py` stages them next to those. Pages are one column that fits the browser window: the log takes the height that is left and the footer is in the flow, not a fixed overlay, so nothing overlaps in the PS5 browser window. The Y2JB fork draws the same UI with the same values |
 | `build_release.sh`, `.gitignore`, `.github/workflows/` | Artifact names; `build.yml` (every push/PR) and tag-driven `release.yml` |
 | `README.md`, `ARCHITECTURE.md` | Fork notes |
 
