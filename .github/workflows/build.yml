@@ -54,8 +54,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Not recursive: remote-loader's nested copy of this repo is not a build input.
-          submodules: true
+          # Recursive: since upstream 0.8, remote-loader vendors Wobkot as a nested
+          # submodule, which the modular page build needs.
+          submodules: recursive
 
       - name: Frontend and payload tests
         run: make test
